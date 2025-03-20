@@ -28,4 +28,4 @@ jobs:
     - name: Run tests
       run: |
         cd $GITHUB_WORKSPACE
-        bash test/run_tests.sh
+        bash test/test_run.sh
