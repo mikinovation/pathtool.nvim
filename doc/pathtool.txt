@@ -106,20 +106,15 @@ Pathtool provides default mappings using <Leader>p as a prefix:
 <Leader>pu     Convert to file URL
 <Leader>po     Open path preview window
 
-To disable default mappings, set: >vim
-    let g:pathtool_no_default_mappings = 1
-<
-
-To change the mapping prefix, set: >vim
-    let g:pathtool_mapping_prefix = '<Leader>z'
-<
+To disable default mappings or change the mapping prefix, you can use the 
+setup() function configuration options.
 
 ===============================================================================
 5. CONFIGURATION                                      *pathtool-configuration*
 
-Pathtool can be configured using the setup() function or global variables.
+Pathtool can be configured using the setup() function in Lua:
 
-Using setup() in Lua: >lua
+>lua
     require('pathtool').setup({
       use_system_clipboard = true,
       show_notifications = true,
@@ -131,17 +126,6 @@ Using setup() in Lua: >lua
         'Makefile', '.project', 'CMakeLists.txt', 'pyproject.toml'
       },
     })
-<
-
-Using global variables in Vimscript: >vim
-    let g:pathtool_config = {
-      'use_system_clipboard': v:true,
-      'show_notifications': v:true,
-      'notification_timeout': 3000,
-      'path_display_length': 60,
-      'detect_project_root': v:true,
-      'project_markers': ['.git', '.svn', 'package.json']
-    }
 <
 
 Configuration options:
@@ -166,6 +150,12 @@ Configuration options:
 
 *project_markers*        (table, default: various common project files)
                         Files or directories that identify a project root.
+
+*no_default_mappings*    (boolean, default: false)
+                        When true, default keymappings will not be created.
+
+*mapping_prefix*         (string, default: "<Leader>p")
+                        Prefix used for all default keymappings.
 
 ===============================================================================
 6. PATH PREVIEW WINDOW                                     *pathtool-preview*

@@ -122,9 +122,7 @@ The path preview window shows all available path formats and lets you copy them 
 
 ## Configuration
 
-You can configure the plugin in two ways:
-
-### Method 1: Using `setup()`
+Configure the plugin using the `setup()` function:
 
 ```lua
 require('pathtool').setup({
@@ -138,25 +136,6 @@ require('pathtool').setup({
     'Makefile', '.project', 'CMakeLists.txt', 'pyproject.toml'
   },
 })
-```
-
-### Method 2: Using global variables
-
-```vim
-" Disable default mappings
-let g:pathtool_no_default_mappings = 1
-
-" Change the mapping prefix
-let g:pathtool_mapping_prefix = '<Leader>z'
-
-" Configuration options
-let g:pathtool_config = {
-  'use_system_clipboard': v:true,
-  'show_notifications': v:true,
-  'notification_timeout': 3000,
-  'path_display_length': 60,
-  'detect_project_root': v:true
-}
 ```
 
 ### Configuration Options
@@ -219,7 +198,3 @@ local new_ext = utils.change_extension(path, 'js')
 ## License
 
 MIT License
-
-## Credits
-
-Inspired by various path manipulation plugins and tools.
