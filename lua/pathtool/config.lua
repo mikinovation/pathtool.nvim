@@ -1,6 +1,5 @@
 local M = {}
 
--- デフォルト設定
 M.defaults = {
 	keymaps = {
 		copy_absolute_path = "<leader>pa",
@@ -29,23 +28,38 @@ M.defaults = {
 		"CMakeLists.txt",
 		"pyproject.toml",
 	},
-	-- 追加機能: カスタム通知フォーマット
 	notification_format = "{action}: {path}",
-	-- 追加機能: パスの切り詰め方法
-	truncation_style = "middle", -- "middle", "start", "end"
-	-- 追加機能: コマンド/キーマップの無効化
-	disabled_features = {}, -- e.g. {"PathToUrl", "copy_dirname"}
+	truncation_style = "middle",
+	disabled_features = {},
 }
 
--- 現在のユーザー設定
 M.options = {}
 
--- 設定の初期化
-M.setup = function(opts)
-	M.options = vim.tbl_deep_extend("force", M.defaults, opts or {})
+local function deep_extend(dst, src)
+	if type(dst) ~= "table" or type(src) ~= "table" then
+		return src
+	end
+
+	for k, v in pairs(src) do
+		if type(v) == "table" and type(dst[k]) == "table" then
+			dst[k] = deep_extend(dst[k], v)
+		else
+			dst[k] = v
+		end
+	end
+
+	return dst
 end
 
--- 設定値の取得
+M.setup = function(opts)
+	M.options = {}
+	M.options = deep_extend(M.options, M.defaults)
+
+	if opts then
+		M.options = deep_extend(M.options, opts)
+	end
+end
+
 M.get = function(key)
 	if key then
 		return M.options[key]
@@ -53,7 +67,6 @@ M.get = function(key)
 	return M.options
 end
 
--- 機能が無効化されていないか確認
 M.is_feature_enabled = function(feature_name)
 	local disabled = M.options.disabled_features or {}
 	for _, v in ipairs(disabled) do
