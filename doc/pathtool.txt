@@ -1,0 +1,252 @@
+*pathtool.txt*  Efficient file path manipulation for Neovim
+
+===============================================================================
+                                                                    *pathtool*
+
+A Neovim plugin for efficient file path manipulation, providing simple ways to
+copy, convert, and preview file paths.
+
+===============================================================================
+CONTENTS                                                   *pathtool-contents*
+
+    1. Introduction ........................... |pathtool-introduction|
+    2. Installation ........................... |pathtool-installation|
+    3. Commands ............................... |pathtool-commands|
+    4. Mappings ............................... |pathtool-mappings|
+    5. Configuration .......................... |pathtool-configuration|
+    6. Path Preview Window .................... |pathtool-preview|
+    7. API Usage .............................. |pathtool-api|
+    8. About .................................. |pathtool-about|
+
+===============================================================================
+1. INTRODUCTION                                         *pathtool-introduction*
+
+Pathtool provides a set of commands and mappings to work with file paths in
+Neovim. It allows you to copy paths in various formats, convert between path
+styles, and preview all available path formats in an interactive window.
+
+Key features:
+- Copy various path formats (absolute, relative, project-relative)
+- Extract filenames and directory names
+- Convert between path styles (Windows/Unix)
+- Transform paths to file URLs
+- Interactive path preview window
+- Project root detection
+- System clipboard integration
+
+===============================================================================
+2. INSTALLATION                                         *pathtool-installation*
+
+Using packer.nvim: >lua
+    use {
+      'mikinovation/pathtool.nvim',
+      config = function()
+        require('pathtool').setup()
+      end
+    }
+<
+
+Using lazy.nvim: >lua
+    {
+      'mikinovation/pathtool.nvim',
+      config = function()
+        require('pathtool').setup()
+      end
+    }
+<
+
+Using vim-plug: >vim
+    Plug 'mikinovation/pathtool.nvim'
+<
+    Then add to your init.lua (optional): >lua
+    require('pathtool').setup({
+      -- your configuration here
+    })
+<
+
+===============================================================================
+3. COMMANDS                                                *pathtool-commands*
+
+The plugin provides the following commands:
+
+*:PathCopyAbsolute*     Copy absolute path to clipboard.
+
+*:PathCopyRelative*     Copy relative path (from current working directory) to
+                      clipboard.
+
+*:PathCopyProject*      Copy project-relative path (from detected project root)
+                      to clipboard.
+
+*:PathCopyFilename*     Copy filename to clipboard.
+
+*:PathCopyFilenameNoExt* Copy filename without extension to clipboard.
+
+*:PathCopyDirname*      Copy directory path to clipboard.
+
+*:PathConvertStyle*     Convert between Windows and Unix path styles and copy
+                      the result to clipboard.
+
+*:PathToUrl*            Convert path to file URL and copy to clipboard.
+
+*:PathPreview*          Show the path preview window with all available
+                      formats.
+
+===============================================================================
+4. MAPPINGS                                                *pathtool-mappings*
+
+Pathtool provides default mappings using <Leader>p as a prefix:
+
+<Leader>pa     Copy absolute path
+<Leader>pr     Copy relative path
+<Leader>pp     Copy project-relative path
+<Leader>pf     Copy filename
+<Leader>pn     Copy filename without extension
+<Leader>pd     Copy directory path
+<Leader>pc     Convert path style
+<Leader>pu     Convert to file URL
+<Leader>po     Open path preview window
+
+To disable default mappings, set: >vim
+    let g:pathtool_no_default_mappings = 1
+<
+
+To change the mapping prefix, set: >vim
+    let g:pathtool_mapping_prefix = '<Leader>z'
+<
+
+===============================================================================
+5. CONFIGURATION                                      *pathtool-configuration*
+
+Pathtool can be configured using the setup() function or global variables.
+
+Using setup() in Lua: >lua
+    require('pathtool').setup({
+      use_system_clipboard = true,
+      show_notifications = true,
+      notification_timeout = 3000,
+      path_display_length = 60,
+      detect_project_root = true,
+      project_markers = {
+        '.git', '.svn', 'package.json', 'Cargo.toml', 'go.mod', 
+        'Makefile', '.project', 'CMakeLists.txt', 'pyproject.toml'
+      },
+    })
+<
+
+Using global variables in Vimscript: >vim
+    let g:pathtool_config = {
+      'use_system_clipboard': v:true,
+      'show_notifications': v:true,
+      'notification_timeout': 3000,
+      'path_display_length': 60,
+      'detect_project_root': v:true,
+      'project_markers': ['.git', '.svn', 'package.json']
+    }
+<
+
+Configuration options:
+
+*use_system_clipboard*   (boolean, default: true)
+                        When true, copies paths to the system clipboard
+                        (+ register) in addition to the unnamed register.
+
+*show_notifications*     (boolean, default: true)
+                        Show notifications when paths are copied.
+
+*notification_timeout*   (number, default: 3000)
+                        Notification timeout in milliseconds.
+
+*path_display_length*    (number, default: 60)
+                        Maximum path length to display in notifications
+                        before truncating.
+
+*detect_project_root*    (boolean, default: true)
+                        Enable project root detection for project-relative
+                        paths.
+
+*project_markers*        (table, default: various common project files)
+                        Files or directories that identify a project root.
+
+===============================================================================
+6. PATH PREVIEW WINDOW                                     *pathtool-preview*
+
+The path preview window displays all available path formats for the current
+file. It can be accessed with the :PathPreview command or <Leader>po mapping.
+
+Inside the preview window, you can press keys to copy specific paths:
+
+a       Copy absolute path
+r       Copy relative path
+p       Copy project relative path
+f       Copy filename
+n       Copy filename without extension
+d       Copy directory path
+c       Copy converted path style
+u       Copy file URL
+q/Esc   Close the window
+
+The window will automatically close after copying a path or when focus is lost.
+
+===============================================================================
+7. API USAGE                                                   *pathtool-api*
+
+You can use pathtool's functions directly in your Lua code:
+
+Main module (require('pathtool')): >lua
+    local pathtool = require('pathtool')
+
+    -- Get paths
+    local abs_path = pathtool.get_absolute_path()
+    local rel_path = pathtool.get_relative_path()
+    local project_path = pathtool.get_project_relative_path()
+    local filename = pathtool.get_filename()
+    local filename_no_ext = pathtool.get_filename_without_ext()
+    local dirname = pathtool.get_dirname()
+
+    -- Convert paths
+    local converted = pathtool.convert_path_style()
+    local file_url = pathtool.encode_path_as_url()
+
+    -- Copy to clipboard
+    pathtool.copy_to_clipboard(abs_path)
+
+    -- Show preview window
+    pathtool.show_path_preview()
+<
+
+Utilities module (require('pathtool.utils')): >lua
+    local utils = require('pathtool.utils')
+
+    -- OS and path detection
+    local is_win = utils.is_windows()
+    local is_unix = utils.is_unix()
+    local is_macos = utils.is_macos()
+    local is_win_path = utils.is_windows_path(path)
+    local is_unix_path = utils.is_unix_path(path)
+
+    -- Path conversion
+    local native_path = utils.to_native_path(path)
+    local converted = utils.convert_path_style(path)
+    local normalized = utils.normalize_path(path)
+    local encoded = utils.url_encode(text)
+    local file_url = utils.path_to_file_url(path)
+
+    -- Path manipulation
+    local rel_path = utils.path_relative_to(path, base)
+    local with_ext = utils.change_extension(path, 'js')
+    local parent = utils.path_up(path, 1)
+    local combined = utils.join_paths(path1, path2)
+    local display = utils.safe_display_path(path, 60)
+<
+
+===============================================================================
+8. ABOUT                                                      *pathtool-about*
+
+Author:    mikinovation
+License:   MIT
+GitHub:    https://github.com/mikinovation/pathtool.nvim
+
+For bug reports and feature requests, please use the GitHub issue tracker.
+
+===============================================================================
+vim:tw=78:ts=4:ft=help:norl:
