@@ -1,0 +1,1 @@
+# pathtool.nvim
