@@ -12,19 +12,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Lua
       uses: leafo/gh-actions-lua@v11
       with:
         luaVersion: "5.1.5"
-    
+
+    - uses: leafo/gh-actions-luarocks@v4
+
     - name: Install busted and luassert
       run: |
-        apt-get update
-        apt-get install -y luarocks
         luarocks install busted
         luarocks install luassert
-    
+
     - name: Run tests
       run: |
         cd $GITHUB_WORKSPACE
