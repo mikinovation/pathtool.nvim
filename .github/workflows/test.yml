@@ -20,8 +20,8 @@ jobs:
     
     - name: Install busted and luassert
       run: |
-        sudo apt-get update
-        sudo apt-get install -y luarocks
+        apt-get update
+        apt-get install -y luarocks
         luarocks install busted
         luarocks install luassert
     
