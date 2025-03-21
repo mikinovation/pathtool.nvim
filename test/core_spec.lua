@@ -453,7 +453,6 @@ describe("pathtool.core", function()
 
 	describe("copy_to_clipboard", function()
 		it("should copy text to system clipboard and unnamed register", function()
-			-- This mimics the expected implementation in core.lua
 			local original_copy_to_clipboard = core.copy_to_clipboard
 			core.copy_to_clipboard = function(text, type)
 				if not text then

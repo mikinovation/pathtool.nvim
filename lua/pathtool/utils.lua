@@ -182,7 +182,6 @@ M.join_paths = function(path1, path2)
 		path1 = path1 .. separator
 	end
 
-	-- パスを結合
 	return path1 .. path2
 end
 

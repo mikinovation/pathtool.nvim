@@ -3,7 +3,6 @@ local config = require("pathtool.config")
 
 local M = {}
 
--- 通知関数
 M.notify = function(msg, level, opts)
 	level = level or "info"
 	opts = opts or {}
@@ -167,7 +166,6 @@ M.copy_to_clipboard = function(text, type)
 		end
 	end
 
-	-- 通知フォーマットのカスタマイズ
 	local action = type or "Copied"
 	local format = config.get("notification_format") or "{action}: {path}"
 	local msg = format:gsub("{action}", action):gsub("{path}", display_text)
@@ -176,9 +174,7 @@ M.copy_to_clipboard = function(text, type)
 	return true
 end
 
--- パスの全情報を取得
 M.get_all_paths = function()
-	-- キャッシュを使ってパフォーマンス改善
 	local abs_path = M.get_absolute_path()
 	if not abs_path then
 		return {}
