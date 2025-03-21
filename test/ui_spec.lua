@@ -105,7 +105,6 @@ describe("pathtool.ui", function()
 
 	describe("show_path_preview", function()
 		it("should create a buffer and window", function()
-			-- 元の関数を保存
 			local orig_nvim_create_buf = vim.api.nvim_create_buf
 			local orig_nvim_open_win = vim.api.nvim_open_win
 			local orig_nvim_buf_set_lines = vim.api.nvim_buf_set_lines
@@ -115,7 +114,6 @@ describe("pathtool.ui", function()
 			local orig_nvim_create_autocmd = vim.api.nvim_create_autocmd
 			local orig_cmd = vim.cmd
 
-			-- スタブ関数をセット
 			local create_buf_called = 0
 			local open_win_called = 0
 			local buf_set_lines_called = 0
@@ -170,7 +168,6 @@ describe("pathtool.ui", function()
 			assert.equals(1, create_autocmd_called)
 			assert.equals(1, cmd_called)
 
-			-- 元の関数に戻す
 			vim.api.nvim_create_buf = orig_nvim_create_buf
 			vim.api.nvim_open_win = orig_nvim_open_win
 			vim.api.nvim_buf_set_lines = orig_nvim_buf_set_lines
@@ -182,7 +179,6 @@ describe("pathtool.ui", function()
 		end)
 
 		it("should call get_all_paths to populate window", function()
-			-- 元の関数を保存
 			local orig_nvim_create_buf = vim.api.nvim_create_buf
 			local orig_nvim_open_win = vim.api.nvim_open_win
 			local orig_nvim_buf_set_lines = vim.api.nvim_buf_set_lines
@@ -192,7 +188,6 @@ describe("pathtool.ui", function()
 			local orig_nvim_create_autocmd = vim.api.nvim_create_autocmd
 			local orig_cmd = vim.cmd
 
-			-- スタブ関数をセット
 			vim.api.nvim_create_buf = function()
 				return 1
 			end
@@ -206,7 +201,6 @@ describe("pathtool.ui", function()
 			vim.api.nvim_create_autocmd = function() end
 			vim.cmd = function() end
 
-			-- コアのモック関数の呼び出し回数をカウント
 			local get_all_paths_called = 0
 			local orig_get_all_paths = core_mock.get_all_paths
 
@@ -222,7 +216,6 @@ describe("pathtool.ui", function()
 
 			assert.equals(1, get_all_paths_called)
 
-			-- 元の関数に戻す
 			vim.api.nvim_create_buf = orig_nvim_create_buf
 			vim.api.nvim_open_win = orig_nvim_open_win
 			vim.api.nvim_buf_set_lines = orig_nvim_buf_set_lines
@@ -235,7 +228,6 @@ describe("pathtool.ui", function()
 		end)
 
 		it("should setup keymaps for each path type", function()
-			-- 元の関数を保存
 			local orig_nvim_create_buf = vim.api.nvim_create_buf
 			local orig_nvim_open_win = vim.api.nvim_open_win
 			local orig_nvim_buf_set_lines = vim.api.nvim_buf_set_lines
@@ -245,7 +237,6 @@ describe("pathtool.ui", function()
 			local orig_nvim_create_autocmd = vim.api.nvim_create_autocmd
 			local orig_cmd = vim.cmd
 
-			-- キーマップの登録を追跡
 			local keymaps_registered = {}
 
 			vim.api.nvim_create_buf = function()
@@ -267,14 +258,12 @@ describe("pathtool.ui", function()
 
 			ui.show_path_preview()
 
-			-- 期待されるキーが登録されているか確認
 			local expected_keys = { "a", "r", "p", "f", "n", "d", "c", "u", "q", "<Esc>" }
 
 			for _, key in ipairs(expected_keys) do
 				assert.is_true(keymaps_registered[key], "Key " .. key .. " should be registered")
 			end
 
-			-- 元の関数に戻す
 			vim.api.nvim_create_buf = orig_nvim_create_buf
 			vim.api.nvim_open_win = orig_nvim_open_win
 			vim.api.nvim_buf_set_lines = orig_nvim_buf_set_lines
@@ -286,7 +275,6 @@ describe("pathtool.ui", function()
 		end)
 
 		it("should setup autocmd to close window on BufLeave", function()
-			-- 元の関数を保存
 			local orig_nvim_create_buf = vim.api.nvim_create_buf
 			local orig_nvim_open_win = vim.api.nvim_open_win
 			local orig_nvim_buf_set_lines = vim.api.nvim_buf_set_lines
@@ -296,7 +284,6 @@ describe("pathtool.ui", function()
 			local orig_nvim_create_autocmd = vim.api.nvim_create_autocmd
 			local orig_cmd = vim.cmd
 
-			-- autocmdの登録内容をキャプチャ
 			local autocmd_registered = false
 			local autocmd_events = nil
 			local autocmd_buffer = nil
@@ -327,7 +314,6 @@ describe("pathtool.ui", function()
 			assert.equals("BufLeave", autocmd_events[1])
 			assert.equals(1, autocmd_buffer)
 
-			-- 元の関数に戻す
 			vim.api.nvim_create_buf = orig_nvim_create_buf
 			vim.api.nvim_open_win = orig_nvim_open_win
 			vim.api.nvim_buf_set_lines = orig_nvim_buf_set_lines
@@ -339,7 +325,6 @@ describe("pathtool.ui", function()
 		end)
 
 		it("should set buffer options correctly", function()
-			-- 元の関数を保存
 			local orig_nvim_create_buf = vim.api.nvim_create_buf
 			local orig_nvim_open_win = vim.api.nvim_open_win
 			local orig_nvim_buf_set_lines = vim.api.nvim_buf_set_lines
@@ -349,7 +334,6 @@ describe("pathtool.ui", function()
 			local orig_nvim_create_autocmd = vim.api.nvim_create_autocmd
 			local orig_cmd = vim.cmd
 
-			-- バッファオプションの設定を追跡
 			local buffer_options = {}
 
 			vim.api.nvim_create_buf = function()
@@ -374,7 +358,6 @@ describe("pathtool.ui", function()
 			assert.equals(false, buffer_options["modifiable"])
 			assert.equals("wipe", buffer_options["bufhidden"])
 
-			-- 元の関数に戻す
 			vim.api.nvim_create_buf = orig_nvim_create_buf
 			vim.api.nvim_open_win = orig_nvim_open_win
 			vim.api.nvim_buf_set_lines = orig_nvim_buf_set_lines
@@ -386,7 +369,6 @@ describe("pathtool.ui", function()
 		end)
 
 		it("should set window options correctly", function()
-			-- 元の関数を保存
 			local orig_nvim_create_buf = vim.api.nvim_create_buf
 			local orig_nvim_open_win = vim.api.nvim_open_win
 			local orig_nvim_buf_set_lines = vim.api.nvim_buf_set_lines
@@ -396,7 +378,6 @@ describe("pathtool.ui", function()
 			local orig_nvim_create_autocmd = vim.api.nvim_create_autocmd
 			local orig_cmd = vim.cmd
 
-			-- ウィンドウオプションの設定を追跡
 			local window_options = {}
 
 			vim.api.nvim_create_buf = function()
@@ -420,7 +401,6 @@ describe("pathtool.ui", function()
 
 			assert.equals("Normal:pathtoolNormal,FloatBorder:pathtoolBorder", window_options["winhl"])
 
-			-- 元の関数に戻す
 			vim.api.nvim_create_buf = orig_nvim_create_buf
 			vim.api.nvim_open_win = orig_nvim_open_win
 			vim.api.nvim_buf_set_lines = orig_nvim_buf_set_lines
@@ -432,7 +412,6 @@ describe("pathtool.ui", function()
 		end)
 
 		it("should handle keymap callbacks correctly", function()
-			-- 元の関数を保存
 			local orig_nvim_create_buf = vim.api.nvim_create_buf
 			local orig_nvim_open_win = vim.api.nvim_open_win
 			local orig_nvim_buf_set_lines = vim.api.nvim_buf_set_lines
@@ -443,7 +422,6 @@ describe("pathtool.ui", function()
 			local orig_nvim_win_close = vim.api.nvim_win_close
 			local orig_cmd = vim.cmd
 
-			-- キーマップのコールバックを追跡
 			local captured_callbacks = {}
 
 			vim.api.nvim_create_buf = function()
@@ -463,7 +441,6 @@ describe("pathtool.ui", function()
 			vim.api.nvim_create_autocmd = function() end
 			vim.cmd = function() end
 
-			-- ウィンドウを閉じる関数の呼び出しを追跡
 			local win_close_called = 0
 			local win_close_args = {}
 
@@ -474,9 +451,7 @@ describe("pathtool.ui", function()
 
 			ui.show_path_preview()
 
-			-- 'a'キーコールバックのテスト
 			if captured_callbacks["a"] then
-				-- コア関数の呼び出しを追跡
 				local orig_get_absolute_path = core_mock.get_absolute_path
 				local orig_copy_to_clipboard = core_mock.copy_to_clipboard
 				local get_absolute_path_called = 0
@@ -494,10 +469,8 @@ describe("pathtool.ui", function()
 					return true
 				end
 
-				-- コールバックを実行
 				captured_callbacks["a"]()
 
-				-- 関数が正しく呼ばれたか確認
 				assert.equals(1, get_absolute_path_called)
 				assert.equals(1, copy_to_clipboard_called)
 				assert.equals("/test/path.txt", copy_to_clipboard_args)
@@ -505,27 +478,21 @@ describe("pathtool.ui", function()
 				assert.equals(2, win_close_args.win)
 				assert.is_true(win_close_args.force)
 
-				-- 元の関数に戻す
 				core_mock.get_absolute_path = orig_get_absolute_path
 				core_mock.copy_to_clipboard = orig_copy_to_clipboard
 			end
 
-			-- 'q'キーをテスト
 			if captured_callbacks["q"] then
-				-- カウンターをリセット
 				win_close_called = 0
 				win_close_args = {}
 
-				-- コールバックを実行
 				captured_callbacks["q"]()
 
-				-- ウィンドウが閉じられたか確認
 				assert.equals(1, win_close_called)
 				assert.equals(2, win_close_args.win)
 				assert.is_true(win_close_args.force)
 			end
 
-			-- 元の関数に戻す
 			vim.api.nvim_create_buf = orig_nvim_create_buf
 			vim.api.nvim_open_win = orig_nvim_open_win
 			vim.api.nvim_buf_set_lines = orig_nvim_buf_set_lines
@@ -538,7 +505,6 @@ describe("pathtool.ui", function()
 		end)
 
 		it("should handle BufLeave autocmd correctly", function()
-			-- 元の関数を保存
 			local orig_nvim_create_buf = vim.api.nvim_create_buf
 			local orig_nvim_open_win = vim.api.nvim_open_win
 			local orig_nvim_buf_set_lines = vim.api.nvim_buf_set_lines
@@ -550,7 +516,6 @@ describe("pathtool.ui", function()
 			local orig_nvim_win_close = vim.api.nvim_win_close
 			local orig_cmd = vim.cmd
 
-			-- autocmdのコールバックを追跡
 			local autocmd_callback = nil
 
 			vim.api.nvim_create_buf = function()
@@ -572,7 +537,6 @@ describe("pathtool.ui", function()
 
 			vim.cmd = function() end
 
-			-- ウィンドウ有効性チェックと閉じる関数の呼び出しを追跡
 			local win_is_valid_called = 0
 			local win_is_valid_args = nil
 			local win_close_called = 0
@@ -591,7 +555,6 @@ describe("pathtool.ui", function()
 
 			ui.show_path_preview()
 
-			-- autocmdコールバックをテスト
 			if autocmd_callback then
 				autocmd_callback()
 
@@ -602,7 +565,6 @@ describe("pathtool.ui", function()
 				assert.is_true(win_close_args.force)
 			end
 
-			-- 元の関数に戻す
 			vim.api.nvim_create_buf = orig_nvim_create_buf
 			vim.api.nvim_open_win = orig_nvim_open_win
 			vim.api.nvim_buf_set_lines = orig_nvim_buf_set_lines

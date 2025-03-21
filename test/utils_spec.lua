@@ -37,7 +37,6 @@ describe("pathtool.utils", function()
 		package.loaded["pathtool.utils"] = nil
 		utils = require("pathtool.utils")
 
-		-- Add safeguards for nil values to avoid test failures
 		local orig_is_windows_path = utils.is_windows_path
 		utils.is_windows_path = function(path)
 			if path == nil then
@@ -57,10 +56,8 @@ describe("pathtool.utils", function()
 
 	describe("is_windows", function()
 		it("should detect Windows OS correctly", function()
-			-- Save original function
 			local orig_has = vim.fn.has
 
-			-- Replace has function for test
 			vim.fn.has = function(feature)
 				if feature == "win32" or feature == "win64" then
 					return 1
@@ -70,17 +67,14 @@ describe("pathtool.utils", function()
 
 			assert.is_true(utils.is_windows())
 
-			-- Restore original function
 			vim.fn.has = orig_has
 		end)
 	end)
 
 	describe("is_unix", function()
 		it("should detect Unix OS correctly", function()
-			-- Save original function
 			local orig_has = vim.fn.has
 
-			-- Replace has function for test
 			vim.fn.has = function(feature)
 				if feature == "unix" then
 					return 1
@@ -90,17 +84,14 @@ describe("pathtool.utils", function()
 
 			assert.is_true(utils.is_unix())
 
-			-- Restore original function
 			vim.fn.has = orig_has
 		end)
 	end)
 
 	describe("is_macos", function()
 		it("should detect macOS correctly", function()
-			-- Save original function
 			local orig_has = vim.fn.has
 
-			-- Replace has function for test
 			vim.fn.has = function(feature)
 				if feature == "mac" or feature == "macunix" then
 					return 1
@@ -110,7 +101,6 @@ describe("pathtool.utils", function()
 
 			assert.is_true(utils.is_macos())
 
-			-- Restore original function
 			vim.fn.has = orig_has
 		end)
 	end)
@@ -158,19 +148,16 @@ describe("pathtool.utils", function()
 
 	describe("to_native_path", function()
 		it("should convert paths to native format on Windows", function()
-			-- Mock is_windows to return true
 			local orig_is_windows = utils.is_windows
 			utils.is_windows = function()
 				return true
 			end
 
-			-- Add safeguard for nil in to_native_path
 			local orig_to_native_path = utils.to_native_path
 			utils.to_native_path = function(path)
 				if path == nil then
 					return nil
 				end
-				-- Simplified test implementation
 				if utils.is_unix_path(path) then
 					if path:find("^/[a-z]") then
 						local drive = path:sub(2, 2):upper()
@@ -184,25 +171,21 @@ describe("pathtool.utils", function()
 			assert.equals("C:\\Users\\test\\file.txt", utils.to_native_path("/c/Users/test/file.txt"))
 			assert.equals("file\\path\\test.lua", utils.to_native_path("file/path/test.lua"))
 
-			-- Restore original functions
 			utils.is_windows = orig_is_windows
 			utils.to_native_path = orig_to_native_path
 		end)
 
 		it("should convert paths to native format on Unix", function()
-			-- Mock is_windows to return false
 			local orig_is_windows = utils.is_windows
 			utils.is_windows = function()
 				return false
 			end
 
-			-- Add safeguard for nil in to_native_path
 			local orig_to_native_path = utils.to_native_path
 			utils.to_native_path = function(path)
 				if path == nil then
 					return nil
 				end
-				-- Simplified test implementation
 				if utils.is_windows_path(path) then
 					if path:match("^%a:") then
 						local drive = path:sub(1, 1):lower()
@@ -216,39 +199,34 @@ describe("pathtool.utils", function()
 			assert.equals("/c/Users/test/file.txt", utils.to_native_path("C:\\Users\\test\\file.txt"))
 			assert.equals("file/path/test.lua", utils.to_native_path("file\\path\\test.lua"))
 
-			-- Restore original functions
 			utils.is_windows = orig_is_windows
 			utils.to_native_path = orig_to_native_path
 		end)
 
 		it("should return unchanged path when already in native format", function()
-			-- Mock necessary functions to test this case
 			local orig_is_windows = utils.is_windows
 			local orig_is_unix_path = utils.is_unix_path
 			local orig_is_windows_path = utils.is_windows_path
 			local orig_to_native_path = utils.to_native_path
 
-			-- Test for Windows
 			utils.is_windows = function()
 				return true
 			end
 			utils.is_unix_path = function(p)
 				return false
-			end -- Path is not Unix
+			end
 
 			assert.equals("C:\\Users\\test\\file.txt", utils.to_native_path("C:\\Users\\test\\file.txt"))
 
-			-- Test for Unix
 			utils.is_windows = function()
 				return false
 			end
 			utils.is_windows_path = function(p)
 				return false
-			end -- Path is not Windows
+			end
 
 			assert.equals("/home/user/file.txt", utils.to_native_path("/home/user/file.txt"))
 
-			-- Restore original functions
 			utils.is_windows = orig_is_windows
 			utils.is_unix_path = orig_is_unix_path
 			utils.is_windows_path = orig_is_windows_path
@@ -262,7 +240,6 @@ describe("pathtool.utils", function()
 
 	describe("normalize_path", function()
 		it("should remove trailing slashes", function()
-			-- Replace normalize_path to ensure expected behavior for the test
 			local orig_normalize_path = utils.normalize_path
 			utils.normalize_path = function(path)
 				if not path then
@@ -274,7 +251,6 @@ describe("pathtool.utils", function()
 			assert.equals("/home/user/file", utils.normalize_path("/home/user/file/"))
 			assert.equals("C:\\Users\\test", utils.normalize_path("C:\\Users\\test\\"))
 
-			-- Restore original function
 			utils.normalize_path = orig_normalize_path
 		end)
 
@@ -306,12 +282,10 @@ describe("pathtool.utils", function()
 		end)
 
 		it("should convert Windows paths to file URLs", function()
-			-- For this test, we need a predictable path_to_file_url function
 			local orig_path_to_file_url = utils.path_to_file_url
 			local orig_is_windows_path = utils.is_windows_path
 			local orig_normalize_path = utils.normalize_path
 
-			-- Simple implementations for the test
 			utils.is_windows_path = function(path)
 				return true
 			end
@@ -324,13 +298,11 @@ describe("pathtool.utils", function()
 				if not path then
 					return nil
 				end
-				-- Simple implementation for testing
 				return "file:///" .. path:gsub("\\", "/")
 			end
 
 			assert.equals("file:///C:/Users/test/file.txt", utils.path_to_file_url("C:\\Users\\test\\file.txt"))
 
-			-- Restore original functions
 			utils.path_to_file_url = orig_path_to_file_url
 			utils.is_windows_path = orig_is_windows_path
 			utils.normalize_path = orig_normalize_path
@@ -343,7 +315,6 @@ describe("pathtool.utils", function()
 
 	describe("path_relative_to", function()
 		it("should return relative path when under base", function()
-			-- Create a simplified implementation for testing
 			local orig_path_relative_to = utils.path_relative_to
 
 			utils.path_relative_to = function(path, base)
@@ -351,7 +322,6 @@ describe("pathtool.utils", function()
 					return path
 				end
 
-				-- Basic implementation for testing
 				if string.sub(path, 1, #base) == base then
 					local rel = string.sub(path, #base + 1)
 					if rel:sub(1, 1) == "/" then
@@ -364,12 +334,10 @@ describe("pathtool.utils", function()
 
 			assert.equals("subdir/file.txt", utils.path_relative_to("/home/user/subdir/file.txt", "/home/user"))
 
-			-- Restore original function
 			utils.path_relative_to = orig_path_relative_to
 		end)
 
 		it("should return original path when not under base", function()
-			-- Create a simplified implementation for testing
 			local orig_path_relative_to = utils.path_relative_to
 
 			utils.path_relative_to = function(path, base)
@@ -377,7 +345,6 @@ describe("pathtool.utils", function()
 					return path
 				end
 
-				-- Basic implementation for testing
 				if string.sub(path, 1, #base) == base then
 					local rel = string.sub(path, #base + 1)
 					if rel:sub(1, 1) == "/" then
@@ -390,12 +357,10 @@ describe("pathtool.utils", function()
 
 			assert.equals("/other/path/file.txt", utils.path_relative_to("/other/path/file.txt", "/home/user"))
 
-			-- Restore original function
 			utils.path_relative_to = orig_path_relative_to
 		end)
 
 		it("should return '.' when path equals base", function()
-			-- Create a simplified implementation for testing
 			local orig_path_relative_to = utils.path_relative_to
 
 			utils.path_relative_to = function(path, base)
@@ -403,7 +368,6 @@ describe("pathtool.utils", function()
 					return path
 				end
 
-				-- Basic implementation for testing
 				if string.sub(path, 1, #base) == base then
 					local rel = string.sub(path, #base + 1)
 					if rel:sub(1, 1) == "/" then
@@ -416,12 +380,10 @@ describe("pathtool.utils", function()
 
 			assert.equals(".", utils.path_relative_to("/home/user", "/home/user"))
 
-			-- Restore original function
 			utils.path_relative_to = orig_path_relative_to
 		end)
 
 		it("should normalize paths before comparison", function()
-			-- Create a simplified implementation for testing with tracking
 			local orig_path_relative_to = utils.path_relative_to
 			local orig_normalize_path = utils.normalize_path
 			local normalize_called = 0
@@ -436,7 +398,6 @@ describe("pathtool.utils", function()
 					return path
 				end
 
-				-- Call normalize to track calls
 				path = utils.normalize_path(path)
 				base = utils.normalize_path(base)
 
@@ -447,13 +408,11 @@ describe("pathtool.utils", function()
 
 			assert.equals(2, normalize_called)
 
-			-- Restore original functions
 			utils.path_relative_to = orig_path_relative_to
 			utils.normalize_path = orig_normalize_path
 		end)
 
 		it("should handle nil inputs gracefully", function()
-			-- Add safeguard for nil in path_relative_to if needed
 			local orig_path_relative_to = utils.path_relative_to
 			utils.path_relative_to = function(path, base)
 				if not path then
@@ -468,14 +427,12 @@ describe("pathtool.utils", function()
 			assert.is_nil(utils.path_relative_to(nil, "/base"))
 			assert.equals("/path", utils.path_relative_to("/path", nil))
 
-			-- Restore original function
 			utils.path_relative_to = orig_path_relative_to
 		end)
 	end)
 
 	describe("change_extension", function()
 		it("should change file extension", function()
-			-- Create a simplified implementation for testing
 			local orig_change_extension = utils.change_extension
 
 			utils.change_extension = function(path, new_ext)
@@ -493,12 +450,10 @@ describe("pathtool.utils", function()
 
 			assert.equals("file.js", utils.change_extension("file.txt", "js"))
 
-			-- Restore original function
 			utils.change_extension = orig_change_extension
 		end)
 
 		it("should add extension to files without one", function()
-			-- Create a simplified implementation for testing
 			local orig_change_extension = utils.change_extension
 
 			utils.change_extension = function(path, new_ext)
@@ -516,12 +471,10 @@ describe("pathtool.utils", function()
 
 			assert.equals("file.js", utils.change_extension("file", "js"))
 
-			-- Restore original function
 			utils.change_extension = orig_change_extension
 		end)
 
 		it("should support extensions with leading dot", function()
-			-- Create a simplified implementation for testing
 			local orig_change_extension = utils.change_extension
 
 			utils.change_extension = function(path, new_ext)
@@ -539,12 +492,10 @@ describe("pathtool.utils", function()
 
 			assert.equals("file.js", utils.change_extension("file.txt", ".js"))
 
-			-- Restore original function
 			utils.change_extension = orig_change_extension
 		end)
 
 		it("should remove extension when nil is passed", function()
-			-- Create a simplified implementation for testing
 			local orig_change_extension = utils.change_extension
 
 			utils.change_extension = function(path, new_ext)
@@ -562,7 +513,6 @@ describe("pathtool.utils", function()
 
 			assert.equals("file", utils.change_extension("file.txt", nil))
 
-			-- Restore original function
 			utils.change_extension = orig_change_extension
 		end)
 
@@ -573,7 +523,6 @@ describe("pathtool.utils", function()
 
 	describe("path_up", function()
 		it("should return parent directory", function()
-			-- Create a simplified implementation for testing
 			local orig_path_up = utils.path_up
 
 			utils.path_up = function(path, levels)
@@ -592,12 +541,10 @@ describe("pathtool.utils", function()
 
 			assert.equals("/home/user", utils.path_up("/home/user/file.txt"))
 
-			-- Restore original function
 			utils.path_up = orig_path_up
 		end)
 
 		it("should go up multiple levels when specified", function()
-			-- Create a simplified implementation for testing
 			local orig_path_up = utils.path_up
 
 			utils.path_up = function(path, levels)
@@ -616,7 +563,6 @@ describe("pathtool.utils", function()
 
 			assert.equals("/home", utils.path_up("/home/user/subdir/file.txt", 3))
 
-			-- Restore original function
 			utils.path_up = orig_path_up
 		end)
 
@@ -627,7 +573,6 @@ describe("pathtool.utils", function()
 
 	describe("join_paths", function()
 		it("should join paths with correct separator", function()
-			-- Create a simplified implementation for testing
 			local orig_join_paths = utils.join_paths
 			local orig_is_windows_path = utils.is_windows_path
 
@@ -661,13 +606,11 @@ describe("pathtool.utils", function()
 
 			assert.equals("/home/user/file.txt", utils.join_paths("/home/user", "file.txt"))
 
-			-- Restore original functions
 			utils.join_paths = orig_join_paths
 			utils.is_windows_path = orig_is_windows_path
 		end)
 
 		it("should handle absolute second path", function()
-			-- Create a simplified implementation for testing
 			local orig_join_paths = utils.join_paths
 
 			utils.join_paths = function(path1, path2)
@@ -684,12 +627,10 @@ describe("pathtool.utils", function()
 
 			assert.equals("/absolute/path", utils.join_paths("/home/user", "/absolute/path"))
 
-			-- Restore original function
 			utils.join_paths = orig_join_paths
 		end)
 
 		it("should handle paths with and without trailing separators", function()
-			-- Create a simplified implementation for testing
 			local orig_join_paths = utils.join_paths
 
 			utils.join_paths = function(path1, path2)
@@ -710,7 +651,6 @@ describe("pathtool.utils", function()
 
 			assert.equals("/home/user/file.txt", utils.join_paths("/home/user/", "file.txt"))
 
-			-- Restore original function
 			utils.join_paths = orig_join_paths
 		end)
 
@@ -735,12 +675,11 @@ describe("pathtool.utils", function()
 		end)
 
 		it("should preserve filename in truncated paths", function()
-			-- Create a simplified implementation for testing
 			local orig_safe_display_path = utils.safe_display_path
 			local orig_is_windows_path = utils.is_windows_path
 
 			utils.is_windows_path = function(path)
-				return false -- Always return false for this test
+				return false
 			end
 
 			utils.safe_display_path = function(path, max_length)
@@ -753,7 +692,6 @@ describe("pathtool.utils", function()
 					return path
 				end
 
-				-- Simple truncation for test
 				local filename = path:match("[^/\\]+$") or ""
 				return "..." .. filename
 			end
@@ -763,18 +701,16 @@ describe("pathtool.utils", function()
 
 			assert.is_true(truncated:find("filename.txt") ~= nil)
 
-			-- Restore original functions
 			utils.safe_display_path = orig_safe_display_path
 			utils.is_windows_path = orig_is_windows_path
 		end)
 
 		it("should handle different path styles", function()
-			-- Create a simplified implementation for testing
 			local orig_safe_display_path = utils.safe_display_path
 			local orig_is_windows_path = utils.is_windows_path
 
 			utils.is_windows_path = function(path)
-				return true -- Always return true for this test
+				return true
 			end
 
 			utils.safe_display_path = function(path, max_length)
@@ -787,7 +723,6 @@ describe("pathtool.utils", function()
 					return path
 				end
 
-				-- Simple truncation for test
 				local filename = path:match("[^/\\]+$") or ""
 				return "..." .. filename
 			end
@@ -797,7 +732,6 @@ describe("pathtool.utils", function()
 
 			assert.is_true(truncated:find("filename.txt") ~= nil)
 
-			-- Restore original functions
 			utils.safe_display_path = orig_safe_display_path
 			utils.is_windows_path = orig_is_windows_path
 		end)
