@@ -15,7 +15,6 @@ describe("pathtool.config", function()
 	describe("defaults", function()
 		it("should have default values", function()
 			assert.is_table(config.defaults)
-			assert.is_table(config.defaults.keymaps)
 			assert.is_table(config.defaults.project_markers)
 			assert.is_true(config.defaults.use_system_clipboard)
 			assert.is_true(config.defaults.show_notifications)
@@ -29,6 +28,13 @@ describe("pathtool.config", function()
 			assert.is_table(config.defaults.disabled_features)
 			assert.equals(0, #config.defaults.disabled_features)
 		end)
+
+		it("should not have keymaps or keymap-related configuration", function()
+			assert.is_nil(config.defaults.keymaps)
+			assert.is_nil(config.defaults.no_default_mappings)
+			assert.is_nil(config.defaults.mapping_prefix)
+			assert.is_nil(config.defaults.create_default_mappings)
+		end)
 	end)
 
 	describe("setup", function()
@@ -38,7 +44,6 @@ describe("pathtool.config", function()
 			assert.equals(config.defaults.use_system_clipboard, config.options.use_system_clipboard)
 			assert.equals(config.defaults.path_display_length, config.options.path_display_length)
 			assert.equals(config.defaults.truncation_style, config.options.truncation_style)
-			assert.equals(config.defaults.keymaps.copy_absolute_path, config.options.keymaps.copy_absolute_path)
 		end)
 
 		it("should override defaults with provided options", function()
@@ -47,9 +52,6 @@ describe("pathtool.config", function()
 				path_display_length = 80,
 				truncation_style = "end",
 				notification_format = "Custom: {path}",
-				keymaps = {
-					copy_absolute_path = "<leader>ca",
-				},
 				disabled_features = { "PathToUrl" },
 			}
 
@@ -59,30 +61,12 @@ describe("pathtool.config", function()
 			assert.equals(80, config.options.path_display_length)
 			assert.equals("end", config.options.truncation_style)
 			assert.equals("Custom: {path}", config.options.notification_format)
-			assert.equals("<leader>ca", config.options.keymaps.copy_absolute_path)
 			assert.is_table(config.options.disabled_features)
 			assert.equals(1, #config.options.disabled_features)
 			assert.equals("PathToUrl", config.options.disabled_features[1])
 
 			assert.equals(config.defaults.show_notifications, config.options.show_notifications)
 			assert.equals(config.defaults.notification_timeout, config.options.notification_timeout)
-		end)
-
-		it("should deep merge tables like keymaps", function()
-			local custom_options = {
-				keymaps = {
-					copy_absolute_path = "<leader>ca",
-					copy_relative_path = "<leader>cr",
-				},
-			}
-
-			config.setup(custom_options)
-
-			assert.equals("<leader>ca", config.options.keymaps.copy_absolute_path)
-			assert.equals("<leader>cr", config.options.keymaps.copy_relative_path)
-
-			assert.equals("<leader>pf", config.options.keymaps.copy_filename)
-			assert.equals("<leader>po", config.options.keymaps.open_preview)
 		end)
 	end)
 
