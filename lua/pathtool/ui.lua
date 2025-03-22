@@ -4,6 +4,13 @@ local core = require("pathtool.core")
 local M = {}
 
 M.show_path_preview = function()
+	local paths_data = core.get_all_paths()
+	
+	if not next(paths_data) then
+		core.notify("No file open", "warn")
+		return
+	end
+	
 	local buf = vim.api.nvim_create_buf(false, true)
 
 	local width = math.min(vim.o.columns - 4, 80)
@@ -23,16 +30,14 @@ M.show_path_preview = function()
 		title_pos = "center",
 	}
 
-	local paths = core.get_all_paths()
-
 	local lines = {}
 	local max_label_len = 0
 
-	for label, _ in pairs(paths) do
+	for label, _ in pairs(paths_data) do
 		max_label_len = math.max(max_label_len, #label)
 	end
 
-	for label, path in pairs(paths) do
+	for label, path in pairs(paths_data) do
 		local padded_label = label .. string.rep(" ", max_label_len - #label)
 		table.insert(lines, string.format("%s : %s", padded_label, path))
 	end
@@ -53,23 +58,22 @@ M.show_path_preview = function()
 		highlight pathtoolBorder guibg=#1a1b26 guifg=#7aa2f7
 	]])
 
-	local mappings = {
-		a = "get_absolute_path",
-		r = "get_relative_path",
-		p = "get_project_relative_path",
-		f = "get_filename",
-		n = "get_filename_without_ext",
-		d = "get_dirname",
-		c = "convert_path_style",
-		u = "encode_path_as_url",
+	local path_mapping = {
+		a = paths_data["Absolute Path"],
+		r = paths_data["Relative Path"],
+		p = paths_data["Project Path"],
+		f = paths_data["Filename"],
+		n = paths_data["Filename (no ext)"],
+		d = paths_data["Directory"],
+		c = paths_data["Converted Style"],
+		u = paths_data["File URL"],
 	}
 
-	for key, func_name in pairs(mappings) do
+	for key, path in pairs(path_mapping) do
 		vim.api.nvim_buf_set_keymap(buf, "n", key, "", {
 			callback = function()
-				local result = core[func_name]()
-				if result then
-					core.copy_to_clipboard(result)
+				if path then
+					core.copy_to_clipboard(path)
 					vim.api.nvim_win_close(win, true)
 				end
 			end,
