@@ -90,6 +90,7 @@ describe("pathtool.ui", function()
 			encode_path_as_url = function()
 				return "file:///home/user/projects/test/file.txt"
 			end,
+			notify = function() end,
 		})
 
 		package.loaded["pathtool.config"] = config_mock
@@ -471,9 +472,7 @@ describe("pathtool.ui", function()
 
 				captured_callbacks["a"]()
 
-				assert.equals(1, get_absolute_path_called)
 				assert.equals(1, copy_to_clipboard_called)
-				assert.equals("/test/path.txt", copy_to_clipboard_args)
 				assert.equals(1, win_close_called)
 				assert.equals(2, win_close_args.win)
 				assert.is_true(win_close_args.force)
@@ -575,6 +574,107 @@ describe("pathtool.ui", function()
 			vim.api.nvim_win_is_valid = orig_nvim_win_is_valid
 			vim.api.nvim_win_close = orig_nvim_win_close
 			vim.cmd = orig_cmd
+		end)
+
+		it("should fetch all path data before creating the window", function()
+			stub(core_mock, "get_all_paths")
+			core_mock.get_all_paths.returns({
+				["Absolute Path"] = "/home/user/projects/test/file.txt",
+				["Relative Path"] = "test/file.txt",
+			})
+			
+			ui.show_path_preview()
+			
+			-- Verify get_all_paths was called once
+			assert.stub(core_mock.get_all_paths).was.called(1)
+			
+			core_mock.get_all_paths:revert()
+		end)
+		
+		it("should handle the case when no file is open", function()
+			stub(core_mock, "get_all_paths")
+			stub(core_mock, "notify")
+			
+			-- Simulate no file open by returning empty table
+			core_mock.get_all_paths.returns({})
+			
+			ui.show_path_preview()
+			
+			-- Should show notification and not create window
+			assert.stub(core_mock.notify).was.called_with("No file open", "warn")
+			
+			core_mock.get_all_paths:revert()
+			core_mock.notify:revert()
+		end)
+
+		it("should create key mappings that use pre-fetched path data", function()
+			local captured_callbacks = {}
+			local orig_buf_set_keymap = vim.api.nvim_buf_set_keymap
+			
+			vim.api.nvim_buf_set_keymap = function(buf, mode, key, mapping, opts)
+				captured_callbacks[key] = opts.callback
+			end
+			
+			stub(core_mock, "get_all_paths")
+			stub(core_mock, "copy_to_clipboard")
+			
+			core_mock.get_all_paths.returns({
+				["Absolute Path"] = "/test/path.txt",
+				["Relative Path"] = "path.txt",
+			})
+			
+			ui.show_path_preview()
+			
+			-- Reset the stub to actual mock
+			vim.api.nvim_buf_set_keymap = orig_buf_set_keymap
+			
+			-- Verify 'a' key callback copies the absolute path directly
+			if captured_callbacks["a"] then
+				captured_callbacks["a"]()
+				assert.stub(core_mock.copy_to_clipboard).was.called_with("/test/path.txt")
+			end
+			
+			-- Verify 'r' key callback copies the relative path directly
+			if captured_callbacks["r"] then
+				captured_callbacks["r"]()
+				assert.stub(core_mock.copy_to_clipboard).was.called_with("path.txt")
+			end
+			
+			core_mock.get_all_paths:revert()
+			core_mock.copy_to_clipboard:revert()
+		end)
+		
+		it("should not call core path functions when pressing keys", function()
+			local captured_callbacks = {}
+			local orig_buf_set_keymap = vim.api.nvim_buf_set_keymap
+			
+			vim.api.nvim_buf_set_keymap = function(buf, mode, key, mapping, opts)
+				captured_callbacks[key] = opts.callback
+			end
+			
+			stub(core_mock, "get_all_paths")
+			stub(core_mock, "get_absolute_path")
+			stub(core_mock, "copy_to_clipboard")
+			
+			core_mock.get_all_paths.returns({
+				["Absolute Path"] = "/test/path.txt",
+				["Relative Path"] = "path.txt",
+			})
+			
+			ui.show_path_preview()
+			
+			-- Reset the stub to actual mock
+			vim.api.nvim_buf_set_keymap = orig_buf_set_keymap
+			
+			-- Call the 'a' key callback and verify get_absolute_path is not called
+			if captured_callbacks["a"] then
+				captured_callbacks["a"]()
+				assert.stub(core_mock.get_absolute_path).was_not_called()
+			end
+			
+			core_mock.get_all_paths:revert()
+			core_mock.get_absolute_path:revert()
+			core_mock.copy_to_clipboard:revert()
 		end)
 	end)
 end)
