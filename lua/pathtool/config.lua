@@ -1,17 +1,6 @@
 local M = {}
 
 M.defaults = {
-	keymaps = {
-		copy_absolute_path = "<leader>pa",
-		copy_relative_path = "<leader>pr",
-		copy_filename = "<leader>pf",
-		copy_dirname = "<leader>pd",
-		copy_project_path = "<leader>pp",
-		copy_filename_no_ext = "<leader>pn",
-		convert_path_style = "<leader>pc",
-		convert_to_url = "<leader>pu",
-		open_preview = "<leader>po",
-	},
 	use_system_clipboard = true,
 	show_notifications = true,
 	notification_timeout = 3000,

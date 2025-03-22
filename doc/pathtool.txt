@@ -12,7 +12,7 @@ CONTENTS                                                   *pathtool-contents*
     1. Introduction ........................... |pathtool-introduction|
     2. Installation ........................... |pathtool-installation|
     3. Commands ............................... |pathtool-commands|
-    4. Mappings ............................... |pathtool-mappings|
+    4. Keymaps ............................... |pathtool-keymaps|
     5. Configuration .......................... |pathtool-configuration|
     6. Path Preview Window .................... |pathtool-preview|
     7. API Usage .............................. |pathtool-api|
@@ -92,22 +92,34 @@ The plugin provides the following commands:
                       formats.
 
 ===============================================================================
-4. MAPPINGS                                                *pathtool-mappings*
+4. KEYMAPS                                                *pathtool-keymaps*
 
-Pathtool provides default mappings using <Leader>p as a prefix:
+Pathtool does not set up any keymaps automatically. You can define your own 
+keymaps to call the plugin commands in your configuration file.
 
-<Leader>pa     Copy absolute path
-<Leader>pr     Copy relative path
-<Leader>pp     Copy project-relative path
-<Leader>pf     Copy filename
-<Leader>pn     Copy filename without extension
-<Leader>pd     Copy directory path
-<Leader>pc     Convert path style
-<Leader>pu     Convert to file URL
-<Leader>po     Open path preview window
+Example of setting up keymaps in your Neovim configuration: >lua
+    -- Map keys directly to commands
+    vim.keymap.set('n', '<leader>pa', ':PathCopyAbsolute<CR>', 
+                  { desc = "Copy absolute path", silent = true })
+    vim.keymap.set('n', '<leader>pr', ':PathCopyRelative<CR>', 
+                  { desc = "Copy relative path", silent = true })
+    vim.keymap.set('n', '<leader>pp', ':PathCopyProject<CR>', 
+                  { desc = "Copy project-relative path", silent = true })
+    vim.keymap.set('n', '<leader>pf', ':PathCopyFilename<CR>', 
+                  { desc = "Copy filename", silent = true })
+    vim.keymap.set('n', '<leader>pn', ':PathCopyFilenameNoExt<CR>', 
+                  { desc = "Copy filename without extension", silent = true })
+    vim.keymap.set('n', '<leader>pd', ':PathCopyDirname<CR>', 
+                  { desc = "Copy directory path", silent = true })
+    vim.keymap.set('n', '<leader>pc', ':PathConvertStyle<CR>', 
+                  { desc = "Convert path style", silent = true })
+    vim.keymap.set('n', '<leader>pu', ':PathToUrl<CR>', 
+                  { desc = "Convert to file URL", silent = true })
+    vim.keymap.set('n', '<leader>po', ':PathPreview<CR>', 
+                  { desc = "Open path preview", silent = true })
+<
 
-To disable default mappings or change the mapping prefix, you can use the 
-setup() function configuration options.
+You can use any key combinations that suit your workflow.
 
 ===============================================================================
 5. CONFIGURATION                                      *pathtool-configuration*
@@ -151,17 +163,11 @@ Configuration options:
 *project_markers*        (table, default: various common project files)
                         Files or directories that identify a project root.
 
-*no_default_mappings*    (boolean, default: false)
-                        When true, default keymappings will not be created.
-
-*mapping_prefix*         (string, default: "<Leader>p")
-                        Prefix used for all default keymappings.
-
 ===============================================================================
 6. PATH PREVIEW WINDOW                                     *pathtool-preview*
 
 The path preview window displays all available path formats for the current
-file. It can be accessed with the :PathPreview command or <Leader>po mapping.
+file. It can be accessed with the :PathPreview command.
 
 Inside the preview window, you can press keys to copy specific paths:
 

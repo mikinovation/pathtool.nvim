@@ -15,7 +15,7 @@ A Neovim plugin for efficient file path manipulation, providing simple ways to c
 - Transform paths to file URLs
 - Interactive path preview window
 - Copy to system clipboard
-- Easy to use commands and keymaps
+- Easy to use commands
 - Project root detection
 
 ## Installation
@@ -90,21 +90,26 @@ The plugin provides the following commands:
 | `:PathToUrl` | Convert path to file URL |
 | `:PathPreview` | Show path preview window |
 
-### Default Keymaps
+### Keymaps
 
-The default keymaps use `<Leader>p` as prefix:
+This plugin does not set up any keymaps automatically. You can define your own keymaps to call the plugin commands.
 
-| Keymap | Action |
-|--------|--------|
-| `<Leader>pa` | Copy absolute path |
-| `<Leader>pr` | Copy relative path |
-| `<Leader>pp` | Copy project-relative path |
-| `<Leader>pf` | Copy filename |
-| `<Leader>pn` | Copy filename without extension |
-| `<Leader>pd` | Copy directory path |
-| `<Leader>pc` | Convert path style |
-| `<Leader>pu` | Convert to file URL |
-| `<Leader>po` | Open path preview window |
+Example of setting up keymaps in your Neovim configuration:
+
+```lua
+-- Map keys directly to commands
+vim.keymap.set('n', '<leader>pa', ':PathCopyAbsolute<CR>', { desc = "Copy absolute path", silent = true })
+vim.keymap.set('n', '<leader>pr', ':PathCopyRelative<CR>', { desc = "Copy relative path", silent = true })
+vim.keymap.set('n', '<leader>pp', ':PathCopyProject<CR>', { desc = "Copy project-relative path", silent = true })
+vim.keymap.set('n', '<leader>pf', ':PathCopyFilename<CR>', { desc = "Copy filename", silent = true })
+vim.keymap.set('n', '<leader>pn', ':PathCopyFilenameNoExt<CR>', { desc = "Copy filename without extension", silent = true })
+vim.keymap.set('n', '<leader>pd', ':PathCopyDirname<CR>', { desc = "Copy directory path", silent = true })
+vim.keymap.set('n', '<leader>pc', ':PathConvertStyle<CR>', { desc = "Convert path style", silent = true })
+vim.keymap.set('n', '<leader>pu', ':PathToUrl<CR>', { desc = "Convert to file URL", silent = true })
+vim.keymap.set('n', '<leader>po', ':PathPreview<CR>', { desc = "Open path preview", silent = true })
+```
+
+You can use any key combinations that suit your workflow.
 
 ### Path Preview Window
 
@@ -162,8 +167,8 @@ local rel_path = pathtool.get_relative_path()
 local filename = pathtool.get_filename()
 
 -- Convert paths
-local converted = pathtool.convert_path_style(abs_path)
-local file_url = pathtool.encode_path_as_url(abs_path)
+local converted = pathtool.convert_path_style()
+local file_url = pathtool.encode_path_as_url()
 
 -- Copy to clipboard
 pathtool.copy_to_clipboard(abs_path)
