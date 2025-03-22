@@ -19,9 +19,7 @@ M.show_path_preview = ui.show_path_preview
 
 M.setup = function(opts)
 	config.setup(opts)
-
 	commands.setup()
-	commands.setup_keymaps()
 end
 
 return M

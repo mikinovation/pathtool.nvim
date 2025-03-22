@@ -24,7 +24,6 @@ describe("pathtool.commands", function()
 		package.loaded["pathtool.ui"] = nil
 		package.loaded["pathtool.config"] = nil
 
-		-- Mock the dependencies
 		core_mock = mock({
 			copy_to_clipboard = function() end,
 			get_absolute_path = function()
@@ -85,16 +84,13 @@ describe("pathtool.commands", function()
 			end,
 		})
 
-		-- Create stubs for the Vim API calls
 		stub(vim.api, "nvim_create_user_command")
 		stub(vim.keymap, "set")
 
-		-- Set up our mocked dependencies
 		package.loaded["pathtool.core"] = core_mock
 		package.loaded["pathtool.ui"] = ui_mock
 		package.loaded["pathtool.config"] = config_mock
 
-		-- Finally load the module we're testing
 		commands = require("pathtool.commands")
 	end)
 
@@ -113,7 +109,6 @@ describe("pathtool.commands", function()
 
 			assert.stub(vim.api.nvim_create_user_command).was.called(10)
 
-			-- Check for each specific command being registered
 			local expected_commands = {
 				"PathCopyAbsolute",
 				"PathCopyRelative",
@@ -133,13 +128,11 @@ describe("pathtool.commands", function()
 		end)
 
 		it("should check feature enablement", function()
-			-- Set up our mock to track calls to is_feature_enabled
 			stub(config_mock, "is_feature_enabled")
 			config_mock.is_feature_enabled.returns(true)
 
 			commands.setup()
 
-			-- We should check feature enablement for each command
 			assert.stub(config_mock.is_feature_enabled).was.called(10)
 
 			mock.revert(config_mock.is_feature_enabled)
@@ -152,10 +145,8 @@ describe("pathtool.commands", function()
 
 			commands.setup()
 
-			-- Now we should have one less command registered
 			assert.stub(vim.api.nvim_create_user_command).was.called(9)
 
-			-- Specifically, PathCopyAbsolute should not be called
 			for i, call in ipairs(vim.api.nvim_create_user_command.calls) do
 				assert.not_equals("PathCopyAbsolute", call.refs[1])
 			end
@@ -168,7 +159,6 @@ describe("pathtool.commands", function()
 		it("should register default keymaps", function()
 			commands.setup_keymaps()
 
-			-- Should set up 9 keymaps
 			assert.stub(vim.keymap.set).was.called(9)
 		end)
 
@@ -202,7 +192,6 @@ describe("pathtool.commands", function()
 
 			assert.stub(vim.keymap.set).was.called(9)
 
-			-- Check a few specific keymaps
 			assert.stub(vim.keymap.set).was.called_with("n", "<leader>ca", match._, match._)
 
 			assert.stub(vim.keymap.set).was.called_with("n", "<leader>cf", match._, match._)
@@ -216,7 +205,6 @@ describe("pathtool.commands", function()
 
 			commands.setup_keymaps()
 
-			-- Should check 9 features
 			assert.stub(config_mock.is_feature_enabled).was.called(9)
 
 			mock.revert(config_mock.is_feature_enabled)
@@ -229,10 +217,8 @@ describe("pathtool.commands", function()
 
 			commands.setup_keymaps()
 
-			-- Should have one less keymap
 			assert.stub(vim.keymap.set).was.called(8)
 
-			-- The "<leader>pa" keymap should not be registered
 			for i, call in ipairs(vim.keymap.set.calls) do
 				assert.not_equals("<leader>pa", call.refs[2])
 			end
@@ -245,7 +231,7 @@ describe("pathtool.commands", function()
 			config_mock.get.on_call_with("no_default_mappings").returns(false)
 			config_mock.get.on_call_with("keymaps").returns({
 				copy_absolute_path = "<leader>pa",
-				copy_relative_path = nil, -- This one should be skipped
+				copy_relative_path = nil,
 				copy_project_path = "<leader>pp",
 				copy_filename = "<leader>pf",
 				copy_filename_no_ext = "<leader>pn",
@@ -257,7 +243,6 @@ describe("pathtool.commands", function()
 
 			commands.setup_keymaps()
 
-			-- Should have one less keymap
 			assert.stub(vim.keymap.set).was.called(8)
 
 			mock.revert(config_mock.get)
@@ -269,10 +254,8 @@ describe("pathtool.commands", function()
 			stub(core_mock, "copy_to_clipboard")
 			stub(core_mock, "get_absolute_path")
 
-			-- Set up the commands
 			commands.setup()
 
-			-- Simulate running a command by finding and calling its callback
 			local absolute_cmd_callback
 			for i, call in ipairs(vim.api.nvim_create_user_command.calls) do
 				if call.refs[1] == "PathCopyAbsolute" then
@@ -283,10 +266,8 @@ describe("pathtool.commands", function()
 
 			assert.is_function(absolute_cmd_callback)
 
-			-- Call the PathCopyAbsolute command callback
 			absolute_cmd_callback()
 
-			-- Verify the core functions were called
 			assert.stub(core_mock.get_absolute_path).was.called(1)
 			assert.stub(core_mock.copy_to_clipboard).was.called(1)
 
@@ -297,10 +278,8 @@ describe("pathtool.commands", function()
 		it("should call ui functions for preview command", function()
 			stub(ui_mock, "show_path_preview")
 
-			-- Set up the commands
 			commands.setup()
 
-			-- Find and call the PathPreview callback
 			local preview_cmd_callback
 			for i, call in ipairs(vim.api.nvim_create_user_command.calls) do
 				if call.refs[1] == "PathPreview" then
@@ -311,17 +290,14 @@ describe("pathtool.commands", function()
 
 			assert.is_function(preview_cmd_callback)
 
-			-- Call the PathPreview command callback
 			preview_cmd_callback()
 
-			-- Verify the UI function was called
 			assert.stub(ui_mock.show_path_preview).was.called(1)
 
 			mock.revert(ui_mock.show_path_preview)
 		end)
 
 		it("should call project root refresh for PathRefreshRoot command", function()
-			-- Make find_project_root always return a valid path
 			local original_find_project_root = core_mock.find_project_root
 			core_mock.find_project_root = function(force_refresh)
 				return "/home/user/projects/test"
@@ -329,10 +305,8 @@ describe("pathtool.commands", function()
 
 			stub(core_mock, "notify")
 
-			-- Set up the commands
 			commands.setup()
 
-			-- Find and call the PathRefreshRoot callback
 			local refresh_cmd_callback
 			for i, call in ipairs(vim.api.nvim_create_user_command.calls) do
 				if call.refs[1] == "PathRefreshRoot" then
@@ -343,13 +317,10 @@ describe("pathtool.commands", function()
 
 			assert.is_function(refresh_cmd_callback)
 
-			-- Call the PathRefreshRoot command callback
 			refresh_cmd_callback()
 
-			-- Verify the notify function was called
 			assert.stub(core_mock.notify).was.called(1)
 
-			-- Restore the original function
 			core_mock.find_project_root = original_find_project_root
 
 			mock.revert(core_mock.find_project_root)
@@ -362,10 +333,8 @@ describe("pathtool.commands", function()
 			stub(core_mock, "copy_to_clipboard")
 			stub(core_mock, "get_absolute_path")
 
-			-- Set up the keymaps
 			commands.setup_keymaps()
 
-			-- Find and call a keymap callback
 			local absolute_keymap_callback
 			for i, call in ipairs(vim.keymap.set.calls) do
 				if call.refs[2] == "<leader>pa" then
@@ -376,10 +345,8 @@ describe("pathtool.commands", function()
 
 			assert.is_function(absolute_keymap_callback)
 
-			-- Call the absolute path keymap callback
 			absolute_keymap_callback()
 
-			-- Verify the core functions were called
 			assert.stub(core_mock.get_absolute_path).was.called(1)
 			assert.stub(core_mock.copy_to_clipboard).was.called(1)
 
@@ -390,10 +357,8 @@ describe("pathtool.commands", function()
 		it("should call ui functions for preview keymap", function()
 			stub(ui_mock, "show_path_preview")
 
-			-- Set up the keymaps
 			commands.setup_keymaps()
 
-			-- Find and call the preview keymap callback
 			local preview_keymap_callback
 			for i, call in ipairs(vim.keymap.set.calls) do
 				if call.refs[2] == "<leader>po" then
@@ -404,10 +369,8 @@ describe("pathtool.commands", function()
 
 			assert.is_function(preview_keymap_callback)
 
-			-- Call the preview keymap callback
 			preview_keymap_callback()
 
-			-- Verify the UI function was called
 			assert.stub(ui_mock.show_path_preview).was.called(1)
 
 			mock.revert(ui_mock.show_path_preview)
