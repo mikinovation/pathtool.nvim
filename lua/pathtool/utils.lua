@@ -1,26 +1,41 @@
 local M = {}
 
-M.is_windows = function()
+--- Determines if the current system is Windows
+-- @return boolean True if the system is Windows
+function M.is_windows()
 	return vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
 end
 
-M.is_unix = function()
+--- Determines if the current system is Unix
+-- @return boolean True if the system is Unix
+function M.is_unix()
 	return vim.fn.has("unix") == 1
 end
 
-M.is_macos = function()
+--- Determines if the current system is macOS
+-- @return boolean True if the system is macOS
+function M.is_macos()
 	return vim.fn.has("mac") == 1 or vim.fn.has("macunix") == 1
 end
 
-M.is_windows_path = function(path)
+--- Checks if a path uses Windows path style
+-- @param path string Path to check
+-- @return boolean True if path is a Windows-style path
+function M.is_windows_path(path)
 	return path:match("\\") ~= nil or path:match("^%a:") ~= nil
 end
 
-M.is_unix_path = function(path)
+--- Checks if a path uses Unix path style
+-- @param path string Path to check
+-- @return boolean True if path is a Unix-style path
+function M.is_unix_path(path)
 	return path:match("/") ~= nil and not M.is_windows_path(path)
 end
 
-M.to_native_path = function(path)
+--- Converts a path to the native path format for the current system
+-- @param path string Path to convert
+-- @return string Path converted to the native format for the current OS
+function M.to_native_path(path)
 	if M.is_windows() then
 		if M.is_unix_path(path) then
 			return path:gsub("/", "\\")
@@ -36,7 +51,10 @@ M.to_native_path = function(path)
 	return path
 end
 
-M.convert_path_style = function(path)
+--- Converts a path between Windows and Unix styles
+-- @param path string Path to convert
+-- @return string Path converted to the opposite style (Windows to Unix or Unix to Windows)
+function M.convert_path_style(path)
 	if M.is_windows_path(path) then
 		path = path:gsub("\\", "/")
 		path = path:gsub("^(%a):", function(drive)
@@ -57,7 +75,10 @@ M.convert_path_style = function(path)
 	end
 end
 
-M.normalize_path = function(path)
+--- Normalizes a path by removing trailing slashes and collapsing multiple consecutive slashes
+-- @param path string Path to normalize
+-- @return string|nil Normalized path or nil if input was nil
+function M.normalize_path(path)
 	if not path then
 		return nil
 	end
@@ -69,7 +90,10 @@ M.normalize_path = function(path)
 	return path
 end
 
-M.url_encode = function(str)
+--- URL encodes a string
+-- @param str string String to URL encode
+-- @return string|nil URL encoded string or nil if input was nil
+function M.url_encode(str)
 	if not str then
 		return nil
 	end
@@ -82,7 +106,10 @@ M.url_encode = function(str)
 	return str
 end
 
-M.path_to_file_url = function(path)
+--- Converts a path to a file URL
+-- @param path string Path to convert
+-- @return string|nil File URL representation of the path or nil if input was nil
+function M.path_to_file_url(path)
 	if not path then
 		return nil
 	end
@@ -112,7 +139,11 @@ M.path_to_file_url = function(path)
 	return "file://" .. encoded_path
 end
 
-M.path_relative_to = function(path, base)
+--- Gets a path relative to a base path
+-- @param path string The path to convert to relative
+-- @param base string The base path to make the path relative to
+-- @return string Either the relative path or the original path if it's not under the base path
+function M.path_relative_to(path, base)
 	if not path or not base then
 		return path
 	end
@@ -135,7 +166,11 @@ M.path_relative_to = function(path, base)
 	return path
 end
 
-M.change_extension = function(path, new_ext)
+--- Changes the file extension of a path
+-- @param path string The path whose extension should be changed
+-- @param new_ext string The new extension (with or without leading dot)
+-- @return string|nil The path with the new extension or nil if input was nil
+function M.change_extension(path, new_ext)
 	if not path then
 		return nil
 	end
@@ -148,7 +183,11 @@ M.change_extension = function(path, new_ext)
 	return base .. (new_ext or "")
 end
 
-M.path_up = function(path, levels)
+--- Gets a parent directory path
+-- @param path string The path to get the parent of
+-- @param levels number (optional) How many levels to go up (default: 1)
+-- @return string|nil The parent path or nil if input was nil
+function M.path_up(path, levels)
 	if not path then
 		return nil
 	end
@@ -162,7 +201,11 @@ M.path_up = function(path, levels)
 	return result
 end
 
-M.join_paths = function(path1, path2)
+--- Joins two paths together
+-- @param path1 string First path
+-- @param path2 string Second path
+-- @return string|nil The joined path or one of the inputs if the other is nil
+function M.join_paths(path1, path2)
 	if not path1 or not path2 then
 		return path1 or path2
 	end
@@ -185,7 +228,11 @@ M.join_paths = function(path1, path2)
 	return path1 .. path2
 end
 
-M.safe_display_path = function(path, max_length)
+--- Creates a display-friendly version of a path, truncating if needed
+-- @param path string The path to format for display
+-- @param max_length number (optional) Maximum length for the displayed path (default: 60)
+-- @return string|nil The formatted path or nil if input was nil
+function M.safe_display_path(path, max_length)
 	if not path then
 		return nil
 	end
