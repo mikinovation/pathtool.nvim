@@ -1,5 +1,6 @@
 local M = {}
 
+--- Default configuration values
 M.defaults = {
 	use_system_clipboard = true,
 	show_notifications = true,
@@ -22,8 +23,13 @@ M.defaults = {
 	disabled_features = {},
 }
 
+--- Current configuration
 M.options = {}
 
+--- Deep merges two tables recursively
+-- @param dst table Destination table
+-- @param src table Source table
+-- @return table Merged table
 local function deep_extend(dst, src)
 	if type(dst) ~= "table" or type(src) ~= "table" then
 		return src
@@ -40,7 +46,9 @@ local function deep_extend(dst, src)
 	return dst
 end
 
-M.setup = function(opts)
+--- Sets up the configuration
+-- @param opts table|nil User options to merge with defaults
+function M.setup(opts)
 	M.options = {}
 	M.options = deep_extend(M.options, M.defaults)
 
@@ -49,14 +57,20 @@ M.setup = function(opts)
 	end
 end
 
-M.get = function(key)
+--- Gets a configuration value
+-- @param key string|nil Configuration key to retrieve (returns full config if nil)
+-- @return any Configuration value or full configuration table
+function M.get(key)
 	if key then
 		return M.options[key]
 	end
 	return M.options
 end
 
-M.is_feature_enabled = function(feature_name)
+--- Checks if a feature is enabled
+-- @param feature_name string Feature name to check
+-- @return boolean Whether the feature is enabled
+function M.is_feature_enabled(feature_name)
 	local disabled = M.options.disabled_features or {}
 	for _, v in ipairs(disabled) do
 		if v == feature_name then
