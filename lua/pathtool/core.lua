@@ -3,7 +3,11 @@ local config = require("pathtool.config")
 
 local M = {}
 
-M.notify = function(msg, level, opts)
+--- Displays a notification
+-- @param msg string Message to display
+-- @param level string (optional) Log level ('info', 'warn', 'error') (default: 'info')
+-- @param opts table (optional) Additional options like timeout
+function M.notify(msg, level, opts)
 	level = level or "info"
 	opts = opts or {}
 
@@ -20,7 +24,9 @@ M.notify = function(msg, level, opts)
 	end
 end
 
-M.get_absolute_path = function()
+--- Gets the absolute path of the current file
+-- @return string|nil Absolute path or nil if no file is open
+function M.get_absolute_path()
 	local filename = vim.fn.expand("%:p")
 	if filename == "" then
 		M.notify("No file open", "warn")
@@ -31,7 +37,9 @@ M.get_absolute_path = function()
 	return filename
 end
 
-M.get_relative_path = function()
+--- Gets the relative path of the current file from the current working directory
+-- @return string|nil Relative path or nil if no file is open
+function M.get_relative_path()
 	local filename = vim.fn.expand("%:.")
 	if filename == "" then
 		M.notify("No file open", "warn")
@@ -42,8 +50,13 @@ M.get_relative_path = function()
 	return filename
 end
 
+--- Cache for project root directories to avoid repeated lookups
 local project_root_cache = {}
-M.find_project_root = function(force_refresh)
+
+--- Finds the project root directory based on marker files/directories
+-- @param force_refresh boolean (optional) Whether to ignore the cache and refresh
+-- @return string Project root directory or current working directory if not found
+function M.find_project_root(force_refresh)
 	if not config.get("detect_project_root") then
 		return vim.fn.getcwd()
 	end
@@ -77,7 +90,9 @@ M.find_project_root = function(force_refresh)
 	return current_dir
 end
 
-M.get_project_relative_path = function()
+--- Gets the path of the current file relative to the project root
+-- @return string|nil Project-relative path or nil if no file is open
+function M.get_project_relative_path()
 	local abs_path = M.get_absolute_path()
 	if not abs_path then
 		return nil
@@ -93,7 +108,9 @@ M.get_project_relative_path = function()
 	return rel_path
 end
 
-M.get_filename = function()
+--- Gets the filename of the current file
+-- @return string|nil Filename or nil if no file is open
+function M.get_filename()
 	local filename = vim.fn.expand("%:t")
 	if filename == "" then
 		M.notify("No file open", "warn")
@@ -102,7 +119,9 @@ M.get_filename = function()
 	return filename
 end
 
-M.get_filename_without_ext = function()
+--- Gets the filename without extension of the current file
+-- @return string|nil Filename without extension or nil if no file is open
+function M.get_filename_without_ext()
 	local filename = vim.fn.expand("%:t:r")
 	if filename == "" then
 		M.notify("No file open", "warn")
@@ -111,7 +130,9 @@ M.get_filename_without_ext = function()
 	return filename
 end
 
-M.get_dirname = function()
+--- Gets the directory path of the current file
+-- @return string|nil Directory path or nil if no file is open
+function M.get_dirname()
 	local dirname = vim.fn.expand("%:p:h")
 	if dirname == "" then
 		M.notify("No file open", "warn")
@@ -122,7 +143,9 @@ M.get_dirname = function()
 	return dirname
 end
 
-M.convert_path_style = function()
+--- Converts the path style of the current file (Unix ↔ Windows)
+-- @return string|nil Converted path or nil if no file is open
+function M.convert_path_style()
 	local path = M.get_absolute_path()
 	if not path then
 		return nil
@@ -131,7 +154,9 @@ M.convert_path_style = function()
 	return utils.convert_path_style(path)
 end
 
-M.encode_path_as_url = function()
+--- Encodes the current file path as a file URL
+-- @return string|nil File URL or nil if no file is open
+function M.encode_path_as_url()
 	local path = M.get_absolute_path()
 	if not path then
 		return nil
@@ -141,7 +166,11 @@ M.encode_path_as_url = function()
 	return file_url
 end
 
-M.copy_to_clipboard = function(text, type)
+--- Copies a text string to clipboard
+-- @param text string Text to copy
+-- @param type string (optional) Action type for notification (default: "Copied")
+-- @return boolean Whether the copying was successful
+function M.copy_to_clipboard(text, type)
 	if not text then
 		return false
 	end
@@ -174,7 +203,9 @@ M.copy_to_clipboard = function(text, type)
 	return true
 end
 
-M.get_all_paths = function()
+--- Gets a table with all available path formats for the current file
+-- @return table Table with all path information or empty table if no file is open
+function M.get_all_paths()
 	local abs_path = M.get_absolute_path()
 	if not abs_path then
 		return {}

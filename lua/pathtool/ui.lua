@@ -3,14 +3,17 @@ local core = require("pathtool.core")
 
 local M = {}
 
-M.show_path_preview = function()
+--- Shows a floating window with path preview
+-- Displays all available path formats for the current file and
+-- allows quick copying with single-key shortcuts
+function M.show_path_preview()
 	local paths_data = core.get_all_paths()
-	
+
 	if not next(paths_data) then
 		core.notify("No file open", "warn")
 		return
 	end
-	
+
 	local buf = vim.api.nvim_create_buf(false, true)
 
 	local width = math.min(vim.o.columns - 4, 80)
@@ -58,6 +61,7 @@ M.show_path_preview = function()
 		highlight pathtoolBorder guibg=#1a1b26 guifg=#7aa2f7
 	]])
 
+	-- Set up key mappings for the preview window
 	local path_mapping = {
 		a = paths_data["Absolute Path"],
 		r = paths_data["Relative Path"],
@@ -90,6 +94,7 @@ M.show_path_preview = function()
 		})
 	end
 
+	-- Auto-close window on buffer leave
 	vim.api.nvim_create_autocmd({ "BufLeave" }, {
 		buffer = buf,
 		once = true,

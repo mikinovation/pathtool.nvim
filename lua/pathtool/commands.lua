@@ -4,7 +4,9 @@ local config = require("pathtool.config")
 
 local M = {}
 
-M.setup = function()
+--- Sets up the plugin commands
+-- Creates user commands for all path operations if they are enabled in config
+function M.setup()
 	local commands = {
 		{
 			name = "PathCopyAbsolute",

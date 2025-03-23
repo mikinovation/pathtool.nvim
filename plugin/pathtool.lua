@@ -1,8 +1,13 @@
+--- pathtool.nvim plugin entry point
+-- Sets up initial plugin loading and commands
+
+-- Prevent loading the plugin multiple times
 if vim.g.loaded_pathtool == 1 then
 	return
 end
 vim.g.loaded_pathtool = 1
 
+--- Defers plugin setup to allow other plugins to load first
 local function defer_setup()
 	vim.defer_fn(function()
 		local default_config = {
@@ -30,6 +35,7 @@ local function defer_setup()
 	end, 0)
 end
 
+--- Creates Neovim commands that load the plugin on first use
 local function create_commands()
 	for _, cmd_name in ipairs({
 		"PathCopyAbsolute",
@@ -50,5 +56,6 @@ local function create_commands()
 	end
 end
 
+-- Create the commands and set up the plugin
 create_commands()
 defer_setup()
