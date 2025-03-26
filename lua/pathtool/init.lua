@@ -64,6 +64,14 @@ M.convert_path_style = core.convert_path_style
 -- @return string|nil File URL or nil if no file is open
 M.encode_path_as_url = core.encode_path_as_url
 
+--- Gets all file paths in the current file's directory
+-- @return table A list of all file paths in the directory
+M.get_all_directory_files = core.get_all_directory_files
+
+--- Copies all file paths in the current directory to clipboard
+-- @return boolean Whether the operation was successful
+M.copy_directory_files = core.copy_directory_files
+
 --- Sets up the plugin with user configuration
 -- Initializes configuration and creates user commands
 -- @param opts table|nil User options to merge with defaults

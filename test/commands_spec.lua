@@ -24,7 +24,6 @@ describe("pathtool.commands", function()
 		package.loaded["pathtool.ui"] = nil
 		package.loaded["pathtool.config"] = nil
 
-		-- Mock the dependencies
 		core_mock = mock({
 			copy_to_clipboard = function() end,
 			get_absolute_path = function()
@@ -62,20 +61,17 @@ describe("pathtool.commands", function()
 		})
 
 		config_mock = mock({
-			is_feature_enabled = function(feature_name)
+			is_feature_enabled = function()
 				return true
 			end,
 		})
 
-		-- Create stubs for the Vim API calls
 		stub(vim.api, "nvim_create_user_command")
 
-		-- Set up our mocked dependencies
 		package.loaded["pathtool.core"] = core_mock
 		package.loaded["pathtool.ui"] = ui_mock
 		package.loaded["pathtool.config"] = config_mock
 
-		-- Finally load the module we're testing
 		commands = require("pathtool.commands")
 	end)
 
@@ -91,9 +87,8 @@ describe("pathtool.commands", function()
 		it("should register the expected commands", function()
 			commands.setup()
 
-			assert.stub(vim.api.nvim_create_user_command).was.called(10)
+			assert.stub(vim.api.nvim_create_user_command).was.called(11)
 
-			-- Check for each specific command being registered
 			local expected_commands = {
 				"PathCopyAbsolute",
 				"PathCopyRelative",
@@ -105,6 +100,7 @@ describe("pathtool.commands", function()
 				"PathToUrl",
 				"PathPreview",
 				"PathRefreshRoot",
+				"PathCopyDirectoryFiles",
 			}
 
 			for _, cmd_name in ipairs(expected_commands) do
@@ -113,14 +109,12 @@ describe("pathtool.commands", function()
 		end)
 
 		it("should check feature enablement", function()
-			-- Set up our mock to track calls to is_feature_enabled
 			stub(config_mock, "is_feature_enabled")
 			config_mock.is_feature_enabled.returns(true)
 
 			commands.setup()
 
-			-- We should check feature enablement for each command
-			assert.stub(config_mock.is_feature_enabled).was.called(10)
+			assert.stub(config_mock.is_feature_enabled).was.called(11)
 
 			mock.revert(config_mock.is_feature_enabled)
 		end)
@@ -132,10 +126,8 @@ describe("pathtool.commands", function()
 
 			commands.setup()
 
-			-- Now we should have one less command registered
-			assert.stub(vim.api.nvim_create_user_command).was.called(9)
+			assert.stub(vim.api.nvim_create_user_command).was.called(10)
 
-			-- Specifically, PathCopyAbsolute should not be called
 			for i, call in ipairs(vim.api.nvim_create_user_command.calls) do
 				assert.not_equals("PathCopyAbsolute", call.refs[1])
 			end
@@ -149,10 +141,8 @@ describe("pathtool.commands", function()
 			stub(core_mock, "copy_to_clipboard")
 			stub(core_mock, "get_absolute_path")
 
-			-- Set up the commands
 			commands.setup()
 
-			-- Simulate running a command by finding and calling its callback
 			local absolute_cmd_callback
 			for i, call in ipairs(vim.api.nvim_create_user_command.calls) do
 				if call.refs[1] == "PathCopyAbsolute" then
@@ -163,10 +153,8 @@ describe("pathtool.commands", function()
 
 			assert.is_function(absolute_cmd_callback)
 
-			-- Call the PathCopyAbsolute command callback
 			absolute_cmd_callback()
 
-			-- Verify the core functions were called
 			assert.stub(core_mock.get_absolute_path).was.called(1)
 			assert.stub(core_mock.copy_to_clipboard).was.called(1)
 
@@ -177,10 +165,8 @@ describe("pathtool.commands", function()
 		it("should call ui functions for preview command", function()
 			stub(ui_mock, "show_path_preview")
 
-			-- Set up the commands
 			commands.setup()
 
-			-- Find and call the PathPreview callback
 			local preview_cmd_callback
 			for i, call in ipairs(vim.api.nvim_create_user_command.calls) do
 				if call.refs[1] == "PathPreview" then
@@ -191,28 +177,23 @@ describe("pathtool.commands", function()
 
 			assert.is_function(preview_cmd_callback)
 
-			-- Call the PathPreview command callback
 			preview_cmd_callback()
 
-			-- Verify the UI function was called
 			assert.stub(ui_mock.show_path_preview).was.called(1)
 
 			mock.revert(ui_mock.show_path_preview)
 		end)
 
 		it("should call project root refresh for PathRefreshRoot command", function()
-			-- Make find_project_root always return a valid path
 			local original_find_project_root = core_mock.find_project_root
-			core_mock.find_project_root = function(force_refresh)
+			core_mock.find_project_root = function()
 				return "/home/user/projects/test"
 			end
 
 			stub(core_mock, "notify")
 
-			-- Set up the commands
 			commands.setup()
 
-			-- Find and call the PathRefreshRoot callback
 			local refresh_cmd_callback
 			for i, call in ipairs(vim.api.nvim_create_user_command.calls) do
 				if call.refs[1] == "PathRefreshRoot" then
@@ -223,13 +204,10 @@ describe("pathtool.commands", function()
 
 			assert.is_function(refresh_cmd_callback)
 
-			-- Call the PathRefreshRoot command callback
 			refresh_cmd_callback()
 
-			-- Verify the notify function was called
 			assert.stub(core_mock.notify).was.called(1)
 
-			-- Restore the original function
 			core_mock.find_project_root = original_find_project_root
 
 			mock.revert(core_mock.find_project_root)

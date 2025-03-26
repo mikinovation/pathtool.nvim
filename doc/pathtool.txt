@@ -28,6 +28,7 @@ styles, and preview all available path formats in an interactive window.
 Key features:
 - Copy various path formats (absolute, relative, project-relative)
 - Extract filenames and directory names
+- Get all files in the current directory recursively
 - Convert between path styles (Windows/Unix)
 - Transform paths to file URLs
 - Interactive path preview window
@@ -83,6 +84,9 @@ The plugin provides the following commands:
 
 *:PathCopyDirname*      Copy directory path to clipboard.
 
+*:PathCopyDirectoryFiles* Copy all file paths in current directory (recursively)
+                       to clipboard.
+
 *:PathConvertStyle*     Convert between Windows and Unix path styles and copy
                       the result to clipboard.
 
@@ -111,6 +115,8 @@ Example of setting up keymaps in your Neovim configuration: >lua
                   { desc = "Copy filename without extension", silent = true })
     vim.keymap.set('n', '<leader>pd', ':PathCopyDirname<CR>', 
                   { desc = "Copy directory path", silent = true })
+    vim.keymap.set('n', '<leader>pD', ':PathCopyDirectoryFiles<CR>', 
+                  { desc = "Copy all files in directory", silent = true })
     vim.keymap.set('n', '<leader>pc', ':PathConvertStyle<CR>', 
                   { desc = "Convert path style", silent = true })
     vim.keymap.set('n', '<leader>pu', ':PathToUrl<CR>', 
@@ -136,6 +142,20 @@ Pathtool can be configured using the setup() function in Lua:
       project_markers = {
         '.git', '.svn', 'package.json', 'Cargo.toml', 'go.mod', 
         'Makefile', '.project', 'CMakeLists.txt', 'pyproject.toml'
+      },
+      directory_files = {
+        max_files = 1000,
+        max_depth = 5,
+        ignored_patterns = {
+          "%.git",
+          "node_modules",
+          "%.DS_Store",
+          "%.cache",
+          "build",
+          "dist"
+        },
+        include_directories = false,
+        relative_paths = true,
       },
     })
 <
@@ -163,6 +183,23 @@ Configuration options:
 *project_markers*        (table, default: various common project files)
                         Files or directories that identify a project root.
 
+*directory_files*        (table) Configuration for directory file listing:
+
+  *max_files*            (number, default: 1000)
+                        Maximum number of files to retrieve.
+
+  *max_depth*            (number, default: 5)
+                        Maximum directory depth to traverse.
+
+  *ignored_patterns*     (table, default: see above)
+                        Patterns to ignore when listing directory files.
+
+  *include_directories*  (boolean, default: false)
+                        Whether to include directories in the result.
+
+  *relative_paths*       (boolean, default: true)
+                        Use paths relative to the current directory.
+
 ===============================================================================
 6. PATH PREVIEW WINDOW                                     *pathtool-preview*
 
@@ -179,6 +216,7 @@ n       Copy filename without extension
 d       Copy directory path
 c       Copy converted path style
 u       Copy file URL
+D       Copy all files in directory
 q/Esc   Close the window
 
 The window will automatically close after copying a path or when focus is lost.
@@ -197,7 +235,8 @@ Main module (require('pathtool')): >lua
     local project_path = pathtool.get_project_relative_path()
     local filename = pathtool.get_filename()
     local filename_no_ext = pathtool.get_filename_without_ext()
-    local dirname = pathtool.get_dirname()
+    local dirname = pathtool.get_dirname(
+    local dir_files = pathtool.get_all_directory_files()
 
     -- Convert paths
     local converted = pathtool.convert_path_style()
@@ -205,6 +244,7 @@ Main module (require('pathtool')): >lua
 
     -- Copy to clipboard
     pathtool.copy_to_clipboard(abs_path)
+    pathtool.copy_directory_files()
 
     -- Show preview window
     pathtool.show_path_preview()
@@ -233,6 +273,9 @@ Utilities module (require('pathtool.utils')): >lua
     local parent = utils.path_up(path, 1)
     local combined = utils.join_paths(path1, path2)
     local display = utils.safe_display_path(path, 60)
+    
+    -- Directory files
+    local files = utils.get_all_files_in_directory(directory, options)
 <
 
 ===============================================================================

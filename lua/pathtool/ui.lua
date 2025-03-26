@@ -17,7 +17,7 @@ function M.show_path_preview()
 	local buf = vim.api.nvim_create_buf(false, true)
 
 	local width = math.min(vim.o.columns - 4, 80)
-	local height = 12
+	local height = 13
 	local row = math.floor((vim.o.lines - height) / 2)
 	local col = math.floor((vim.o.columns - width) / 2)
 
@@ -47,7 +47,7 @@ function M.show_path_preview()
 
 	table.insert(lines, "")
 	table.insert(lines, "Press key to copy: [a]bsolute [r]elative [p]roject [f]ilename [d]irectory")
-	table.insert(lines, "                   [n]ame-no-ext [c]onverted [u]rl [q/Esc]uit")
+	table.insert(lines, "                   [n]ame-no-ext [c]onverted [u]rl [D]ir-files [q/Esc]uit")
 
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 	local win = vim.api.nvim_open_win(buf, true, opts)
@@ -84,6 +84,14 @@ function M.show_path_preview()
 			noremap = true,
 		})
 	end
+
+	vim.api.nvim_buf_set_keymap(buf, "n", "D", "", {
+		callback = function()
+			core.copy_directory_files()
+			vim.api.nvim_win_close(win, true)
+		end,
+		noremap = true,
+	})
 
 	for _, key in ipairs({ "q", "<Esc>" }) do
 		vim.api.nvim_buf_set_keymap(buf, "n", key, "", {

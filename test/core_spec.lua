@@ -682,16 +682,110 @@ describe("pathtool.core", function()
 			core.get_absolute_path:revert()
 		end)
 	end)
-end)
 
-describe("pathtool.core path handling edge cases", function()
-	pending("should handle paths with special characters")
-	pending("should handle very long paths correctly")
-	pending("should handle paths with unicode characters")
-	pending("should handle network paths")
-end)
+	describe("get_all_directory_files", function()
+		it("should return a list of files in the directory", function()
+			stub(core, "get_dirname").returns("/home/user/projects/test")
+			stub(utils_mock, "get_all_files_in_directory").returns({
+				"/home/user/projects/test/file1.txt",
+				"/home/user/projects/test/file2.txt",
+				"/home/user/projects/test/subdir/file3.txt",
+			})
 
-describe("pathtool.core performance", function()
-	pending("should have fast project root detection with caching")
-	pending("should efficiently handle multiple rapid path operations")
+			local files = core.get_all_directory_files()
+
+			assert.is_table(files)
+			assert.equals(3, #files)
+			assert.stub(utils_mock.get_all_files_in_directory).was.called(1)
+
+			core.get_dirname:revert()
+			utils_mock.get_all_files_in_directory:revert()
+		end)
+
+		it("should return an empty table when no directory is available", function()
+			stub(core, "get_dirname").returns(nil)
+
+			local files = core.get_all_directory_files()
+
+			assert.is_table(files)
+			assert.equals(0, #files)
+
+			core.get_dirname:revert()
+		end)
+
+		it("should sort the files", function()
+			stub(core, "get_dirname").returns("/home/user/projects/test")
+			stub(utils_mock, "get_all_files_in_directory").returns({
+				"/home/user/projects/test/c_file.txt",
+				"/home/user/projects/test/a_file.txt",
+				"/home/user/projects/test/b_file.txt",
+			})
+
+			local files = core.get_all_directory_files()
+
+			assert.is_table(files)
+			assert.equals(3, #files)
+			assert.equals("/home/user/projects/test/a_file.txt", files[1])
+			assert.equals("/home/user/projects/test/b_file.txt", files[2])
+			assert.equals("/home/user/projects/test/c_file.txt", files[3])
+
+			core.get_dirname:revert()
+			utils_mock.get_all_files_in_directory:revert()
+		end)
+
+		it("should pass configuration options", function()
+			stub(core, "get_dirname").returns("/home/user/projects/test")
+			stub(utils_mock, "get_all_files_in_directory")
+			stub(config_mock, "get")
+
+			config_mock.get.on_call_with("directory_files").returns({
+				max_files = 500,
+				max_depth = 3,
+				ignored_patterns = { "%.git" },
+			})
+
+			core.get_all_directory_files()
+
+			assert
+				.stub(utils_mock.get_all_files_in_directory).was
+				.called_with("/home/user/projects/test", match.is_table())
+
+			core.get_dirname:revert()
+			utils_mock.get_all_files_in_directory:revert()
+			config_mock.get:revert()
+		end)
+	end)
+
+	describe("copy_directory_files", function()
+		it("should copy the directory files to clipboard", function()
+			stub(core, "get_all_directory_files").returns({
+				"/home/user/projects/test/file1.txt",
+				"/home/user/projects/test/file2.txt",
+			})
+			stub(core, "copy_to_clipboard").returns(true)
+
+			local result = core.copy_directory_files()
+
+			assert.is_true(result)
+			assert
+				.stub(core.copy_to_clipboard).was
+				.called_with("/home/user/projects/test/file1.txt\n/home/user/projects/test/file2.txt", "Copied directory files")
+
+			core.get_all_directory_files:revert()
+			core.copy_to_clipboard:revert()
+		end)
+
+		it("should return false when no files are found", function()
+			stub(core, "get_all_directory_files").returns({})
+			stub(core, "notify")
+
+			local result = core.copy_directory_files()
+
+			assert.is_false(result)
+			assert.stub(core.notify).was.called_with("No files found in directory", "warn")
+
+			core.get_all_directory_files:revert()
+			core.notify:revert()
+		end)
+	end)
 end)

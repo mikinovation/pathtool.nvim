@@ -262,4 +262,51 @@ function M.safe_display_path(path, max_length)
 	return "..." .. path:sub(-max_length + 3)
 end
 
+--- Gets all file paths in a directory recursively
+-- @param directory string The directory to scan
+-- @return table A list of all file paths in the directory
+function M.get_all_files_in_directory(directory, options)
+	options = options or {}
+	local max_files = options.max_files or 1000
+	local max_depth = options.max_depth or 5
+	local ignored_patterns = options.ignored_patterns or { "%.git", "node_modules", "%.DS_Store" }
+	local current_depth = options.current_depth or 0
+
+	local result = {}
+	if current_depth > max_depth then
+		return result
+	end
+
+	local items = vim.fn.glob(directory .. "/*", false, true)
+	for _, item in ipairs(items) do
+		local should_ignore = false
+		for _, pattern in ipairs(ignored_patterns) do
+			if item:match(pattern) then
+				should_ignore = true
+				break
+			end
+		end
+
+		if not should_ignore then
+			if vim.fn.isdirectory(item) == 1 then
+				local next_options = vim.tbl_extend("force", options, { current_depth = current_depth + 1 })
+				local subdir_files = M.get_all_files_in_directory(item, next_options)
+				for _, file in ipairs(subdir_files) do
+					table.insert(result, file)
+					if #result >= max_files then
+						return result
+					end
+				end
+			else
+				table.insert(result, item)
+				if #result >= max_files then
+					return result
+				end
+			end
+		end
+	end
+
+	return result
+end
+
 return M
