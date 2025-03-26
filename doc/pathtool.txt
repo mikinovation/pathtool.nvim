@@ -288,4 +288,4 @@ GitHub:    https://github.com/mikinovation/pathtool.nvim
 For bug reports and feature requests, please use the GitHub issue tracker.
 
 ===============================================================================
-vim:tw=78:ts=4:ft=help:norl:)
+vim:tw=78:ts=4:ft=help:norl:
