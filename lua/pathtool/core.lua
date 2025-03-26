@@ -232,10 +232,14 @@ function M.get_all_directory_files()
 		return {}
 	end
 
-	local files = utils.get_all_files_in_directory(current_dir)
+	local options = config.get("directory_files") or {}
+
+	local files = utils.get_all_files_in_directory(current_dir, options) or {}
 
 	-- Sort files to ensure consistent ordering
-	table.sort(files)
+	if #files > 0 then
+		table.sort(files)
+	end
 
 	return files
 end
