@@ -223,4 +223,34 @@ function M.get_all_paths()
 	}
 end
 
+--- Gets all file paths in the current file's directory
+-- @return table A list of all file paths in the directory
+function M.get_all_directory_files()
+	local current_dir = M.get_dirname()
+	if not current_dir then
+		M.notify("No file open", "warn")
+		return {}
+	end
+
+	local files = utils.get_all_files_in_directory(current_dir)
+
+	-- Sort files to ensure consistent ordering
+	table.sort(files)
+
+	return files
+end
+
+--- Copies all file paths in the current directory to clipboard
+-- @return boolean Whether the operation was successful
+function M.copy_directory_files()
+	local files = M.get_all_directory_files()
+	if #files == 0 then
+		M.notify("No files found in directory", "warn")
+		return false
+	end
+
+	local text = table.concat(files, "\n")
+	return M.copy_to_clipboard(text, "Copied directory files")
+end
+
 return M

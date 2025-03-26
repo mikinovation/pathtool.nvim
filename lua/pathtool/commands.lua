@@ -79,6 +79,13 @@ function M.setup()
 			end,
 			desc = "Refresh project root cache",
 		},
+		{
+			name = "PathCopyDirectoryFiles",
+			callback = function()
+				core.copy_to_clipboard(core.get_directory_files())
+			end,
+			desc = "Copy all file paths in directory to clipboard",
+		},
 	}
 
 	for _, cmd in ipairs(commands) do

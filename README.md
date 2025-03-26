@@ -11,6 +11,7 @@ A Neovim plugin for efficient file path manipulation, providing simple ways to c
   - Filename only
   - Filename without extension
   - Directory path
+  - All files in current directory (recursively)
 - Convert between path styles (Windows ↔ Unix)
 - Transform paths to file URLs
 - Interactive path preview window
@@ -86,6 +87,7 @@ The plugin provides the following commands:
 | `:PathCopyFilename` | Copy filename to clipboard |
 | `:PathCopyFilenameNoExt` | Copy filename without extension |
 | `:PathCopyDirname` | Copy directory path to clipboard |
+| `:PathCopyDirectoryFiles` | Copy paths of all files in current directory |
 | `:PathConvertStyle` | Convert between Windows/Unix path styles |
 | `:PathToUrl` | Convert path to file URL |
 | `:PathPreview` | Show path preview window |
@@ -104,6 +106,7 @@ vim.keymap.set('n', '<leader>pp', ':PathCopyProject<CR>', { desc = "Copy project
 vim.keymap.set('n', '<leader>pf', ':PathCopyFilename<CR>', { desc = "Copy filename", silent = true })
 vim.keymap.set('n', '<leader>pn', ':PathCopyFilenameNoExt<CR>', { desc = "Copy filename without extension", silent = true })
 vim.keymap.set('n', '<leader>pd', ':PathCopyDirname<CR>', { desc = "Copy directory path", silent = true })
+vim.keymap.set('n', '<leader>pD', ':PathCopyDirectoryFiles<CR>', { desc = "Copy all files in directory", silent = true })
 vim.keymap.set('n', '<leader>pc', ':PathConvertStyle<CR>', { desc = "Convert path style", silent = true })
 vim.keymap.set('n', '<leader>pu', ':PathToUrl<CR>', { desc = "Convert to file URL", silent = true })
 vim.keymap.set('n', '<leader>po', ':PathPreview<CR>', { desc = "Open path preview", silent = true })
@@ -123,6 +126,7 @@ The path preview window shows all available path formats and lets you copy them 
 - `d` - Copy directory path
 - `c` - Copy converted path style
 - `u` - Copy file URL
+- `D` - Copy all files in directory
 - `q` or `<Esc>` - Close window
 
 ## Configuration
@@ -140,6 +144,20 @@ require('pathtool').setup({
     '.git', '.svn', 'package.json', 'Cargo.toml', 'go.mod', 
     'Makefile', '.project', 'CMakeLists.txt', 'pyproject.toml'
   },
+  directory_files = {
+    max_files = 1000,
+    max_depth = 5,
+    ignored_patterns = {
+      "%.git",
+      "node_modules",
+      "%.DS_Store",
+      "%.cache",
+      "build",
+      "dist"
+    },
+    include_directories = false,
+    relative_paths = true,
+  },
 })
 ```
 
@@ -153,6 +171,12 @@ require('pathtool').setup({
 | `path_display_length` | number | `60` | Max length for paths in notifications |
 | `detect_project_root` | boolean | `true` | Enable project root detection |
 | `project_markers` | table | see above | Files/directories that identify project root |
+| `directory_files` | table | see above | Configuration for directory files listing |
+| `directory_files.max_files` | number | `1000` | Maximum number of files to retrieve |
+| `directory_files.max_depth` | number | `5` | Maximum directory depth to traverse |
+| `directory_files.ignored_patterns` | table | see above | Patterns to ignore when listing files |
+| `directory_files.include_directories` | boolean | `false` | Whether to include directories in the result |
+| `directory_files.relative_paths` | boolean | `true` | Use paths relative to the current directory |
 
 ## API Usage
 
@@ -166,12 +190,16 @@ local abs_path = pathtool.get_absolute_path()
 local rel_path = pathtool.get_relative_path()
 local filename = pathtool.get_filename()
 
+-- Get directory files
+local dir_files = pathtool.get_all_directory_files()
+
 -- Convert paths
 local converted = pathtool.convert_path_style()
 local file_url = pathtool.encode_path_as_url()
 
 -- Copy to clipboard
 pathtool.copy_to_clipboard(abs_path)
+pathtool.copy_directory_files()
 
 -- Show preview window
 pathtool.show_path_preview()
